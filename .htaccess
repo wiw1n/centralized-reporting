@@ -1,0 +1,17 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+RewriteBase /centralized-reporting/
+# If your project is in server root then should be: RewriteBase /
+# If your project is in folder then it should be: RewriteBase /centralized-reporting/
+
+RewriteCond %{REQUEST_URI} ^system.*
+RewriteRule ^(.*)$ /index.php?/$1 [L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?/$1 [L]
+</IfModule>
+<IfModule !mod_rewrite.c>
+ErrorDocument 404 /index.php
+</IfModule>
