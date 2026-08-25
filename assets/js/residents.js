@@ -10,6 +10,7 @@
 
         var table = initServerDataTable('#residents_table', BASE_URL + 'residents/datatable', [
             { data: 'resident_no' },
+            { data: 'household_no' },
             { data: 'full_name' },
             { data: 'barangay_name' },
             { data: 'sex' },

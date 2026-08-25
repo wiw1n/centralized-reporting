@@ -12,6 +12,7 @@ class Residents extends MY_Controller
         $this->require_role(['super_admin', 'admin', 'encoder']);
         $this->load->model('resident_model');
         $this->load->model('resident_household_model');
+        $this->load->model('resident_data_survey_model');
         $this->load->model('barangay_model');
         $this->load->model('municipality_model');
         $this->load->model('province_model');
@@ -66,12 +67,13 @@ class Residents extends MY_Controller
 
         $result = $this->datatable->response(
             function ($db) use ($barangay_id, $municipality_id, $province_id, $region_id, $restricted_barangay_id, $restricted_municipality_id) {
-                $db->select("residents.id, residents.resident_no,
+                $db->select("residents.id, residents.resident_no, resident_household.household_no,
                         CONCAT(residents.last_name, ', ', residents.first_name, ' ', COALESCE(residents.middle_name, '')) AS full_name,
                         residents.sex, residents.birthdate, residents.contact_number,
                         address_barangay.name AS barangay_name,
                         TIMESTAMPDIFF(YEAR, residents.birthdate, CURDATE()) AS age")
                     ->from('residents')
+                    ->join('resident_household', 'resident_household.resident_id = residents.id', 'left')
                     ->join('address_barangay', 'address_barangay.id = residents.barangay_id')
                     ->join('address_municipality', 'address_municipality.id = address_barangay.municipality_id')
                     ->join('address_province', 'address_province.id = address_municipality.province_id')
@@ -95,11 +97,12 @@ class Residents extends MY_Controller
                     $db->where('address_province.region_id', $region_id);
                 }
             },
-            ['residents.resident_no', 'residents.last_name', 'residents.first_name'],
-            ['residents.resident_no', 'full_name', 'address_barangay.name', 'residents.sex', 'age', null],
+            ['residents.resident_no', 'resident_household.household_no', 'residents.last_name', 'residents.first_name'],
+            ['residents.resident_no', 'resident_household.household_no', 'full_name', 'address_barangay.name', 'residents.sex', 'age', null],
             function ($row) {
                 return [
                     'resident_no' => html_escape($row->resident_no),
+                    'household_no' => html_escape($row->household_no ?? ''),
                     'full_name' => html_escape(trim($row->full_name)),
                     'barangay_name' => html_escape($row->barangay_name),
                     'sex' => html_escape($row->sex),
@@ -209,6 +212,7 @@ class Residents extends MY_Controller
                 ]
             ));
             $this->resident_household_model->save($resident_id, $this->collect_household_fields());
+            $this->resident_data_survey_model->save($resident_id, $this->collect_data_survey_fields());
             $this->session->set_flashdata('success', 'Resident created successfully.');
             redirect('residents');
         }
@@ -259,6 +263,7 @@ class Residents extends MY_Controller
         $this->data['active_menu'] = 'residents';
         $this->data['resident'] = $resident;
         $this->data['resident_household'] = $this->resident_household_model->get_by_resident($id);
+        $this->data['resident_data_survey'] = $this->resident_data_survey_model->get_by_resident($id);
         $this->data['regions'] = [];
         $this->data['provinces'] = [];
         $this->data['municipalities'] = [];
@@ -290,6 +295,7 @@ class Residents extends MY_Controller
                 ['barangay_id' => $barangay_id]
             ));
             $this->resident_household_model->save($id, $this->collect_household_fields());
+            $this->resident_data_survey_model->save($id, $this->collect_data_survey_fields());
             $this->session->set_flashdata('success', 'Resident updated successfully.');
             redirect('residents');
         }
@@ -362,6 +368,7 @@ class Residents extends MY_Controller
         $this->form_validation->set_rules('indigenous_group', 'Indigenous Group', 'trim|max_length[100]');
         $this->form_validation->set_rules('remarks', 'Remarks', 'trim');
 
+        $this->form_validation->set_rules('household_no', 'Household No.', 'trim|max_length[30]');
         $this->form_validation->set_rules('relationship_to_head', 'Relationship to Head', 'trim');
         $this->form_validation->set_rules('ordinal_position', 'Ord. Position', 'trim|numeric');
         $this->form_validation->set_rules('other_illness', 'Other Illness', 'trim|max_length[150]');
@@ -376,6 +383,14 @@ class Residents extends MY_Controller
         $this->form_validation->set_rules('school_level', 'School Level', 'trim');
         $this->form_validation->set_rules('school_type', 'School Type', 'trim');
         $this->form_validation->set_rules('school_nutritional_status', 'School Nutritional Status', 'trim');
+
+        $this->form_validation->set_rules('immunization_status', 'Immun. Status', 'trim');
+        $this->form_validation->set_rules('covid_vaccine_status', 'COVID-19 Immun. Status', 'trim');
+        $this->form_validation->set_rules('schisto_mda_status', 'Schisto MDA Status', 'trim');
+        $this->form_validation->set_rules('schisto_mda_date', 'Schisto MDA Date of Tx', 'trim');
+        $this->form_validation->set_rules('exercises', 'Exercise', 'trim');
+        $this->form_validation->set_rules('exercise_frequency', 'Exercise Frequency', 'trim|max_length[50]');
+        $this->form_validation->set_rules('has_recreational_activity', 'Recreational Activity', 'trim');
 
         if ($restricted_barangay_id === null) {
             $this->form_validation->set_rules('barangay_id', 'Barangay', 'required|trim|numeric');
@@ -436,6 +451,7 @@ class Residents extends MY_Controller
         $int = fn ($field) => trim((string) $this->input->post($field)) !== '' ? (int) $this->input->post($field) : null;
 
         return [
+            'household_no' => $text('household_no'),
             'relationship_to_head' => $text('relationship_to_head'),
             'ordinal_position' => $int('ordinal_position'),
             'is_surveyed' => $this->input->post('is_surveyed') ? 1 : 0,
@@ -458,6 +474,26 @@ class Residents extends MY_Controller
             'school_type' => $text('school_type'),
             'school_weighed' => $this->input->post('school_weighed') ? 1 : 0,
             'school_nutritional_status' => $text('school_nutritional_status'),
+        ];
+    }
+
+    /** Maps posted Data Survey Tool fields onto the resident_data_survey row shape. */
+    private function collect_data_survey_fields()
+    {
+        $text = fn ($field) => trim((string) $this->input->post($field)) !== '' ? trim((string) $this->input->post($field)) : null;
+        $yn = fn ($field) => in_array($this->input->post($field), ['0', '1'], true) ? (int) $this->input->post($field) : null;
+
+        return [
+            'immunization_status' => in_array($this->input->post('immunization_status'), Resident_data_survey_model::IMMUNIZATION_STATUS_OPTIONS, true) ? $this->input->post('immunization_status') : null,
+            'covid_vaccine_status' => in_array($this->input->post('covid_vaccine_status'), Resident_data_survey_model::COVID_VACCINE_STATUS_OPTIONS, true) ? $this->input->post('covid_vaccine_status') : null,
+            'schisto_mda_status' => $yn('schisto_mda_status'),
+            'schisto_mda_date' => $text('schisto_mda_date'),
+            'eats_breakfast' => $this->input->post('eats_breakfast') ? 1 : 0,
+            'eats_lunch' => $this->input->post('eats_lunch') ? 1 : 0,
+            'eats_snacks' => $this->input->post('eats_snacks') ? 1 : 0,
+            'exercises' => $yn('exercises'),
+            'exercise_frequency' => $text('exercise_frequency'),
+            'has_recreational_activity' => $yn('has_recreational_activity'),
         ];
     }
 }

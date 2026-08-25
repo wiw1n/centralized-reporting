@@ -62,89 +62,111 @@
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
-            <?php if (isset($current_user) && in_array($current_user->role_name, ['super_admin'], true)): ?>
-            <li class="nav-item">
-                <a class="nav-link <?= (isset($active_menu) && $active_menu === 'users') ? 'active' : '' ?>" href="<?= base_url('users') ?>">
-                    <i class="bi bi-people-fill"></i> Users
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <?= (isset($active_menu) && $active_menu === 'settings') ? 'active' : '' ?>" href="<?= base_url('settings') ?>">
-                    <i class="bi bi-gear-fill"></i> System Settings
-                </a>
-            </li>
-            <?php endif; ?>
-            <?php if (isset($current_user) && in_array($current_user->role_name, ['super_admin', 'admin'], true)): ?>
-            <li class="nav-item mt-2">
-                <span class="sidebar-heading">Addresses</span>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <?= (isset($active_menu) && $active_menu === 'regions') ? 'active' : '' ?>" href="<?= base_url('regions') ?>">
-                    <i class="bi bi-globe-asia-australia"></i> Regions
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <?= (isset($active_menu) && $active_menu === 'provinces') ? 'active' : '' ?>" href="<?= base_url('provinces') ?>">
-                    <i class="bi bi-map"></i> Provinces
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <?= (isset($active_menu) && $active_menu === 'municipalities') ? 'active' : '' ?>" href="<?= base_url('municipalities') ?>">
-                    <i class="bi bi-building"></i> Municipalities
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link <?= (isset($active_menu) && $active_menu === 'barangays') ? 'active' : '' ?>" href="<?= base_url('barangays') ?>">
-                    <i class="bi bi-houses-fill"></i> Barangays
-                </a>
-            </li>
-            <?php endif; ?>
-            <?php if (isset($current_user) && in_array($current_user->role_name, ['super_admin', 'admin', 'encoder'], true)): ?>
-            <li class="nav-item mt-2">
-                <span class="sidebar-heading">Profiling</span>
-            </li>
             <li class="nav-item">
                 <a class="nav-link <?= (isset($active_menu) && $active_menu === 'residents') ? 'active' : '' ?>" href="<?= base_url('residents') ?>">
                     <i class="bi bi-person-vcard-fill"></i> Residents
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link <?= (isset($active_menu) && $active_menu === 'households') ? 'active' : '' ?>" href="<?= base_url('households') ?>">
-                    <i class="bi bi-house-heart-fill"></i> Households
-                </a>
+            <li class="nav-item mt-2">
+                <span class="sidebar-heading">Reports</span>
             </li>
-            <?php
-                $report_modules = [
-                    ['key' => 'reports_civil_registrar', 'label' => 'Civil Registrar', 'icon' => 'bi-journal-bookmark-fill', 'id' => 'civilRegistrarSubmenu'],
-                    ['key' => 'reports_mswd', 'label' => 'MSWD', 'icon' => 'bi-people-fill', 'id' => 'mswdSubmenu'],
-                    ['key' => 'reports_rhu', 'label' => 'RHU', 'icon' => 'bi-heart-pulse-fill', 'id' => 'rhuSubmenu'],
-                    ['key' => 'reports_assessor', 'label' => 'Assessor', 'icon' => 'bi-clipboard-data-fill', 'id' => 'assessorSubmenu'],
-                    ['key' => 'reports_bplo', 'label' => 'BPLO', 'icon' => 'bi-shop', 'id' => 'bploSubmenu'],
-                    ['key' => 'reports_barangay', 'label' => 'Barangay', 'icon' => 'bi-houses-fill', 'id' => 'barangaySubmenu'],
-                ];
-            ?>
-            <?php foreach ($report_modules as $module): ?>
+            <!-- HEALTH REPORTS -->
             <li class="nav-item">
-                <a class="nav-link d-flex align-items-center justify-content-between <?= (isset($active_menu) && $active_menu === $module['key']) ? 'active' : '' ?>"
-                   href="#" data-bs-toggle="collapse" data-bs-target="#<?= $module['id'] ?>" role="button"
-                   aria-expanded="<?= (isset($active_menu) && $active_menu === $module['key']) ? 'true' : 'false' ?>" aria-controls="<?= $module['id'] ?>">
-                    <span><i class="bi <?= $module['icon'] ?>"></i> <?= html_escape($module['label']) ?></span>
+                <a class="nav-link d-flex align-items-center justify-content-between <?= (isset($active_menu) && $active_menu === "health") ? 'active' : '' ?>"
+                   href="#" data-bs-toggle="collapse" data-bs-target="#health" role="button"
+                   aria-expanded="<?= (isset($active_menu) && $active_menu === "health") ? 'true' : 'false' ?>" aria-controls="health">
+                    <span><i class="bi bi-heart-pulse-fill"></i> Health</span>
                     <i class="bi bi-chevron-down sidebar-caret"></i>
                 </a>
-                <ul class="nav flex-column sidebar-submenu collapse <?= (isset($active_menu) && $active_menu === $module['key']) ? 'show' : '' ?>" id="<?= $module['id'] ?>">
+                <ul class="nav flex-column sidebar-submenu collapse <?= (isset($active_menu) && $active_menu === "health") ? 'show' : '' ?>" id="health">
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= base_url('reports') ?>">
-                            <i class="bi bi-file-earmark-bar-graph-fill"></i> Reports
+                        <a class="nav-link" href="<?= base_url('health/household_report') ?>">
+                            <i class="bi bi-house-heart-fill"></i> Household Report
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?= base_url('health/data_survey_report') ?>">
+                            <i class="bi bi-clipboard2-pulse"></i> Data Survey Tool
                         </a>
                     </li>
                 </ul>
             </li>
-            <?php endforeach; ?>
+            <!-- SOCIAL SERVICES REPORTS -->
             <li class="nav-item">
-                <a class="nav-link <?= (isset($active_menu) && $active_menu === 'nutrition_profile') ? 'active' : '' ?>" href="<?= base_url('nutrition_profile') ?>">
-                    <i class="bi bi-clipboard2-pulse-fill"></i> Nutrition Profile
+                <a class="nav-link disabled d-flex align-items-center justify-content-between"
+                   href="#" role="button" aria-disabled="true" tabindex="-1">
+                    <span><i class="bi bi-people-fill"></i> Social Services</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link disabled d-flex align-items-center justify-content-between"
+                   href="#" role="button" aria-disabled="true" tabindex="-1">
+                    <span><i class="bi bi-journal-bookmark-fill"></i> Civil Registrar</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled d-flex align-items-center justify-content-between"
+                   href="#" role="button" aria-disabled="true" tabindex="-1">
+                    <span><i class="bi bi-clipboard-data-fill"></i> Assessor</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled d-flex align-items-center justify-content-between"
+                   href="#" role="button" aria-disabled="true" tabindex="-1">
+                    <span><i class="bi bi-shop"></i> Business Sector</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled d-flex align-items-center justify-content-between"
+                   href="#" role="button" aria-disabled="true" tabindex="-1">
+                    <span><i class="bi bi-houses-fill"></i> Barangay</span>
+                </a>
+            </li>
+            <li class="nav-item mt-2">
+                <span class="sidebar-heading">System Configuration</span>
+            </li>
+            <?php if (isset($current_user) && in_array($current_user->role_name, ['super_admin'], true)): ?>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center justify-content-between <?= (isset($active_menu) && $active_menu === "addresses") ? 'active' : '' ?>"
+                    href="#" data-bs-toggle="collapse" data-bs-target="#addresses" role="button"
+                    aria-expanded="<?= (isset($active_menu) && $active_menu === "addresses") ? 'true' : 'false' ?>" aria-controls="addresses">
+                        <span><i class="bi bi-geo-alt"></i> addresses</span>
+                        <i class="bi bi-chevron-down sidebar-caret"></i>
+                    </a>
+                    <ul class="nav flex-column sidebar-submenu collapse <?= (isset($active_menu) && $active_menu === "addresses") ? 'show' : '' ?>" id="addresses">
+                        <li class="nav-item">
+                            <a class="nav-link disabled aria-disabled="true" <?= (isset($active_menu) && $active_menu === 'regions') ? 'active' : '' ?>" href="<?= base_url('regions') ?>">
+                                <i class="bi bi-globe-asia-australia"></i> Regions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled aria-disabled="true" <?= (isset($active_menu) && $active_menu === 'provinces') ? 'active' : '' ?>" href="<?= base_url('provinces') ?>">
+                                <i class="bi bi-map"></i> Provinces
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled aria-disabled="true" <?= (isset($active_menu) && $active_menu === 'municipalities') ? 'active' : '' ?>" href="<?= base_url('municipalities') ?>">
+                                <i class="bi bi-building"></i> Municipalities
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= (isset($active_menu) && $active_menu === 'barangays') ? 'active' : '' ?>" href="<?= base_url('barangays') ?>">
+                                <i class="bi bi-houses-fill"></i> Barangays
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= (isset($active_menu) && $active_menu === 'users') ? 'active' : '' ?>" href="<?= base_url('users') ?>">
+                        <i class="bi bi-people-fill"></i> Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= (isset($active_menu) && $active_menu === 'settings') ? 'active' : '' ?>" href="<?= base_url('settings') ?>">
+                        <i class="bi bi-gear-fill"></i> System Settings
+                    </a>
+                </li>
+                
             <?php endif; ?>
         </ul>
     </nav>

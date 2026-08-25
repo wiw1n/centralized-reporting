@@ -10,8 +10,11 @@ $weight_height_options = Resident_household_model::NUTRITIONAL_STATUS_WEIGHT_HEI
 $school_level_options = Resident_household_model::SCHOOL_LEVEL_OPTIONS;
 $school_type_options = Resident_household_model::SCHOOL_TYPE_OPTIONS;
 $school_nutrition_options = Resident_household_model::SCHOOL_NUTRITIONAL_STATUS_OPTIONS;
+$immunization_status_options = Resident_data_survey_model::IMMUNIZATION_STATUS_OPTIONS;
+$covid_vaccine_status_options = Resident_data_survey_model::COVID_VACCINE_STATUS_OPTIONS;
 $r = $resident;
 $hh = $resident_household ?? null;
+$ds = $resident_data_survey ?? null;
 ?>
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="mb-0"><i class="bi bi-person-vcard-fill"></i> <?= html_escape($page_title) ?></h3>
@@ -31,6 +34,7 @@ $hh = $resident_household ?? null;
                     <a class="list-group-item list-group-item-action" href="#section-gov-ids"><i class="bi bi-postcard-fill"></i> Government IDs</a>
                     <a class="list-group-item list-group-item-action" href="#section-program-flags"><i class="bi bi-flag-fill"></i> Program Flags</a>
                     <a class="list-group-item list-group-item-action" href="#section-household"><i class="bi bi-house-heart-fill"></i> Household Information</a>
+                    <a class="list-group-item list-group-item-action" href="#section-data-survey"><i class="bi bi-clipboard2-pulse"></i> Data Survey Tool</a>
                     <a class="list-group-item list-group-item-action" href="#section-remarks"><i class="bi bi-chat-left-text-fill"></i> Remarks</a>
                 </div>
             </div>
@@ -344,6 +348,10 @@ $hh = $resident_household ?? null;
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 mb-3">
+                            <label class="form-label">Household No.</label>
+                            <input type="text" name="household_no" class="form-control" maxlength="30" value="<?= set_value('household_no', $hh->household_no ?? '') ?>" placeholder="e.g. HH-B1-0001">
+                        </div>
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Relationship to Head</label>
                             <select name="relationship_to_head" class="form-select">
                                 <option value="">-- Select --</option>
@@ -489,6 +497,99 @@ $hh = $resident_household ?? null;
                                     <?php foreach ($school_nutrition_options as $opt): ?>
                                         <option value="<?= html_escape($opt) ?>" <?= set_value('school_nutritional_status', $hh->school_nutritional_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
                                     <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-data-survey" class="card shadow-sm form-section mb-4">
+                <div class="card-header"><h5 class="mb-0"><i class="bi bi-clipboard2-pulse"></i> Data Survey Tool <small class="text-muted">(optional)</small></h5></div>
+                <div class="card-body">
+                    <div class="border-top pt-2 mt-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">Immun. Status</div>
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <select name="immunization_status" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <?php foreach ($immunization_status_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('immunization_status', $ds->immunization_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">COVID-19 Immun. (No. of Doses)</label>
+                                <select name="covid_vaccine_status" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <?php foreach ($covid_vaccine_status_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('covid_vaccine_status', $ds->covid_vaccine_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-2 mt-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">Schisto MDA Status</div>
+                        <div class="row align-items-end">
+                            <div class="col-md-2 mb-2">
+                                <select name="schisto_mda_status" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <option value="1" <?= set_value('schisto_mda_status', isset($ds->schisto_mda_status) ? (string) $ds->schisto_mda_status : '') === '1' ? 'selected' : '' ?>>Yes</option>
+                                    <option value="0" <?= set_value('schisto_mda_status', isset($ds->schisto_mda_status) ? (string) $ds->schisto_mda_status : '') === '0' ? 'selected' : '' ?>>No</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label small mb-1">Date of Tx</label>
+                                <input type="date" name="schisto_mda_date" class="form-control form-control-sm" value="<?= set_value('schisto_mda_date', $ds->schisto_mda_date ?? '') ?>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-2 mt-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">Usual Daily Food Intake</div>
+                        <div class="row">
+                            <div class="col-auto form-check">
+                                <input type="checkbox" name="eats_breakfast" value="1" class="form-check-input" id="eats_breakfast" <?= set_value('eats_breakfast', $ds->eats_breakfast ?? 0) ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="eats_breakfast">Breakfast</label>
+                            </div>
+                            <div class="col-auto form-check">
+                                <input type="checkbox" name="eats_lunch" value="1" class="form-check-input" id="eats_lunch" <?= set_value('eats_lunch', $ds->eats_lunch ?? 0) ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="eats_lunch">Lunch</label>
+                            </div>
+                            <div class="col-auto form-check">
+                                <input type="checkbox" name="eats_snacks" value="1" class="form-check-input" id="eats_snacks" <?= set_value('eats_snacks', $ds->eats_snacks ?? 0) ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="eats_snacks">Snacks</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-2 mt-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">Exercise</div>
+                        <div class="row align-items-end">
+                            <div class="col-md-2 mb-2">
+                                <select name="exercises" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <option value="1" <?= set_value('exercises', isset($ds->exercises) ? (string) $ds->exercises : '') === '1' ? 'selected' : '' ?>>Yes</option>
+                                    <option value="0" <?= set_value('exercises', isset($ds->exercises) ? (string) $ds->exercises : '') === '0' ? 'selected' : '' ?>>No</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Frequency</label>
+                                <input type="text" name="exercise_frequency" class="form-control form-control-sm" maxlength="50" placeholder="e.g. 3x/week" value="<?= set_value('exercise_frequency', $ds->exercise_frequency ?? '') ?>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-2 mt-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">Recreational Activity</div>
+                        <div class="row">
+                            <div class="col-md-2 mb-2">
+                                <select name="has_recreational_activity" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <option value="1" <?= set_value('has_recreational_activity', isset($ds->has_recreational_activity) ? (string) $ds->has_recreational_activity : '') === '1' ? 'selected' : '' ?>>Yes</option>
+                                    <option value="0" <?= set_value('has_recreational_activity', isset($ds->has_recreational_activity) ? (string) $ds->has_recreational_activity : '') === '0' ? 'selected' : '' ?>>No</option>
                                 </select>
                             </div>
                         </div>

@@ -386,7 +386,7 @@ $config['encryption_key'] = '';
 |
 */
 $config['sess_driver'] = 'files';
-$config['sess_cookie_name'] = 'ci_session';
+$config['sess_cookie_name'] = 'centralized_reporting_session';
 $config['sess_samesite'] = 'Lax';
 $config['sess_expiration'] = 7200;
 $config['sess_save_path'] = NULL;
@@ -412,7 +412,11 @@ $config['sess_regenerate_destroy'] = FALSE;
 */
 $config['cookie_prefix']	= '';
 $config['cookie_domain']	= '';
-$config['cookie_path']		= '/';
+// Scoped to this app's subfolder (not '/') so its session/CSRF cookies can't
+// collide with sibling CodeIgniter apps served from the same host, which
+// otherwise fight over the same default cookie name and silently stomp on
+// each other's session -- the cause of the "keeps logging out" issue.
+$config['cookie_path']		= '/centralized-reporting/';
 $config['cookie_secure']	= FALSE;
 $config['cookie_httponly'] 	= FALSE;
 $config['cookie_samesite'] 	= 'Lax';

@@ -60,6 +60,7 @@
                 <thead>
                     <tr>
                         <th>Resident No.</th>
+                        <th>Household No.</th>
                         <th>Name</th>
                         <th>Barangay</th>
                         <th>Sex</th>

@@ -189,6 +189,12 @@ body {
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
 }
 
+.app-sidebar .nav-link.disabled {
+    color: rgba(255, 255, 255, 0.35);
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
 .app-sidebar .sidebar-caret {
     font-size: 0.8rem;
     transition: transform 0.2s ease;
