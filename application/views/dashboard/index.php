@@ -42,6 +42,10 @@
                 <div class="fs-4 fw-semibold"><?= (int) $town_summary->population ?></div>
             </div>
             <div class="col-md-2 col-6">
+                <div class="text-muted small">Households</div>
+                <div class="fs-4 fw-semibold"><?= (int) $town_summary->household_count ?></div>
+            </div>
+            <div class="col-md-2 col-6">
                 <div class="text-muted small">PWD</div>
                 <div class="fs-4 fw-semibold"><?= (int) $town_summary->pwd_count ?></div>
             </div>

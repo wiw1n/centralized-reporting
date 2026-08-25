@@ -144,6 +144,15 @@ class Resident_model extends CI_Model
                 ->count_all_results();
         }
 
+        $household_count = (int) ($this->db
+            ->select('COUNT(DISTINCT CONCAT(residents.barangay_id, "-", resident_household.household_no)) AS household_count', false)
+            ->from($this->table)
+            ->join('resident_household', 'resident_household.resident_id = residents.id')
+            ->where('residents.archive', 0)
+            ->where($resident_where)
+            ->where('resident_household.household_no IS NOT NULL')
+            ->get()->row()->household_count ?? 0);
+
         return (object) [
             'population' => (int) ($totals->population ?? 0),
             'sex_breakdown' => $sex_breakdown,
@@ -152,6 +161,7 @@ class Resident_model extends CI_Model
             'senior_count' => (int) ($totals->senior_count ?? 0),
             'solo_parent_count' => (int) ($totals->solo_parent_count ?? 0),
             'fourps_count' => (int) ($totals->fourps_count ?? 0),
+            'household_count' => $household_count,
         ];
     }
 }
