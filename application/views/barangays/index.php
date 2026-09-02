@@ -35,6 +35,7 @@
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Prefix</th>
                         <th>Municipality</th>
                         <th>Province</th>
                         <th>Poblacion</th>

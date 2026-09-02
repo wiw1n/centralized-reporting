@@ -145,7 +145,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link disabled aria-disabled="true" <?= (isset($active_menu) && $active_menu === 'municipalities') ? 'active' : '' ?>" href="<?= base_url('municipalities') ?>">
+                            <a class="nav-link <?= (isset($active_menu) && $active_menu === 'municipalities') ? 'active' : '' ?>" href="<?= base_url('municipalities') ?>">
                                 <i class="bi bi-building"></i> Municipalities
                             </a>
                         </li>

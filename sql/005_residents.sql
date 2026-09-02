@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `residents` (
   `is_pwd` tinyint(1) NOT NULL DEFAULT '0',
   `is_senior_citizen` tinyint(1) NOT NULL DEFAULT '0',
   `is_solo_parent` tinyint(1) NOT NULL DEFAULT '0',
-  `is_4ps_beneficiary` tinyint(1) NOT NULL DEFAULT '0',
+  `is_4ps_beneficiary` varchar(50) DEFAULT NULL COMMENT '4Ps ID Number; NULL = not a beneficiary',
   `is_ofw` tinyint(1) NOT NULL DEFAULT '0',
   `is_indigenous` tinyint(1) NOT NULL DEFAULT '0',
   `indigenous_group` varchar(100) DEFAULT NULL,

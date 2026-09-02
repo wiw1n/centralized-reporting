@@ -11,6 +11,12 @@ class Residents extends MY_Controller
         parent::__construct();
         $this->require_role(['super_admin', 'admin', 'encoder']);
         $this->load->model('resident_model');
+        $this->load->model('resident_personal_model');
+        $this->load->model('resident_contact_model');
+        $this->load->model('resident_work_education_model');
+        $this->load->model('resident_government_ids_model');
+        $this->load->model('resident_program_flags_model');
+        $this->load->model('resident_remarks_model');
         $this->load->model('resident_household_model');
         $this->load->model('resident_data_survey_model');
         $this->load->model('barangay_model');
@@ -69,7 +75,7 @@ class Residents extends MY_Controller
             function ($db) use ($barangay_id, $municipality_id, $province_id, $region_id, $restricted_barangay_id, $restricted_municipality_id) {
                 $db->select("residents.id, residents.resident_no, resident_household.household_no,
                         CONCAT(residents.last_name, ', ', residents.first_name, ' ', COALESCE(residents.middle_name, '')) AS full_name,
-                        residents.sex, residents.birthdate, residents.contact_number,
+                        residents.sex, residents.birthdate,
                         address_barangay.name AS barangay_name,
                         TIMESTAMPDIFF(YEAR, residents.birthdate, CURDATE()) AS age")
                     ->from('residents')
@@ -211,6 +217,12 @@ class Residents extends MY_Controller
                     'created_by' => $this->current_user->id,
                 ]
             ));
+            $this->resident_personal_model->save($resident_id, $this->collect_personal_fields());
+            $this->resident_contact_model->save($resident_id, $this->collect_contact_fields());
+            $this->resident_work_education_model->save($resident_id, $this->collect_work_education_fields());
+            $this->resident_government_ids_model->save($resident_id, $this->collect_government_ids_fields());
+            $this->resident_program_flags_model->save($resident_id, $this->collect_program_flags_fields());
+            $this->resident_remarks_model->save($resident_id, $this->collect_remarks_fields());
             $this->resident_household_model->save($resident_id, $this->collect_household_fields());
             $this->resident_data_survey_model->save($resident_id, $this->collect_data_survey_fields());
             $this->session->set_flashdata('success', 'Resident created successfully.');
@@ -262,6 +274,12 @@ class Residents extends MY_Controller
         $this->data['page_title'] = 'Edit Resident';
         $this->data['active_menu'] = 'residents';
         $this->data['resident'] = $resident;
+        $this->data['resident_personal'] = $this->resident_personal_model->get_by_resident($id);
+        $this->data['resident_contact'] = $this->resident_contact_model->get_by_resident($id);
+        $this->data['resident_work_education'] = $this->resident_work_education_model->get_by_resident($id);
+        $this->data['resident_government_ids'] = $this->resident_government_ids_model->get_by_resident($id);
+        $this->data['resident_program_flags'] = $this->resident_program_flags_model->get_by_resident($id);
+        $this->data['resident_remarks'] = $this->resident_remarks_model->get_by_resident($id);
         $this->data['resident_household'] = $this->resident_household_model->get_by_resident($id);
         $this->data['resident_data_survey'] = $this->resident_data_survey_model->get_by_resident($id);
         $this->data['regions'] = [];
@@ -294,6 +312,12 @@ class Residents extends MY_Controller
                 $this->collect_post_fields(),
                 ['barangay_id' => $barangay_id]
             ));
+            $this->resident_personal_model->save($id, $this->collect_personal_fields());
+            $this->resident_contact_model->save($id, $this->collect_contact_fields());
+            $this->resident_work_education_model->save($id, $this->collect_work_education_fields());
+            $this->resident_government_ids_model->save($id, $this->collect_government_ids_fields());
+            $this->resident_program_flags_model->save($id, $this->collect_program_flags_fields());
+            $this->resident_remarks_model->save($id, $this->collect_remarks_fields());
             $this->resident_household_model->save($id, $this->collect_household_fields());
             $this->resident_data_survey_model->save($id, $this->collect_data_survey_fields());
             $this->session->set_flashdata('success', 'Resident updated successfully.');
@@ -346,7 +370,7 @@ class Residents extends MY_Controller
         $this->form_validation->set_rules('sex', 'Sex', 'required|trim|in_list[Male,Female]');
         $this->form_validation->set_rules('birthdate', 'Birthdate', 'required|trim');
         $this->form_validation->set_rules('birthplace', 'Birthplace', 'trim|max_length[150]');
-        $this->form_validation->set_rules('civil_status', 'Civil Status', 'required|trim|in_list[' . implode(',', Resident_model::CIVIL_STATUS_OPTIONS) . ']');
+        $this->form_validation->set_rules('civil_status', 'Civil Status', 'required|trim|in_list[' . implode(',', Resident_personal_model::CIVIL_STATUS_OPTIONS) . ']');
         $this->form_validation->set_rules('religion', 'Religion', 'trim|max_length[50]');
         $this->form_validation->set_rules('citizenship', 'Citizenship', 'trim|max_length[50]');
         $this->form_validation->set_rules('blood_type', 'Blood Type', 'trim');
@@ -365,9 +389,11 @@ class Residents extends MY_Controller
         $this->form_validation->set_rules('pagibig_no', 'Pag-IBIG No.', 'trim|max_length[50]');
         $this->form_validation->set_rules('philhealth_no', 'PhilHealth No.', 'trim|max_length[50]');
         $this->form_validation->set_rules('tin_no', 'TIN No.', 'trim|max_length[50]');
+        $this->form_validation->set_rules('yakap_no', 'Yakap No.', 'trim|max_length[50]');
         $this->form_validation->set_rules('indigenous_group', 'Indigenous Group', 'trim|max_length[100]');
         $this->form_validation->set_rules('remarks', 'Remarks', 'trim');
 
+        $this->form_validation->set_rules('type_of_resident', 'Type of Resident', 'trim|in_list[' . implode(',', Resident_household_model::TYPE_OF_RESIDENT_OPTIONS) . ']');
         $this->form_validation->set_rules('household_no', 'Household No.', 'trim|max_length[30]');
         $this->form_validation->set_rules('relationship_to_head', 'Relationship to Head', 'trim');
         $this->form_validation->set_rules('ordinal_position', 'Ord. Position', 'trim|numeric');
@@ -377,12 +403,25 @@ class Residents extends MY_Controller
         $this->form_validation->set_rules('lmp_date', 'LMP', 'trim');
         $this->form_validation->set_rules('edc_date', 'EDC', 'trim');
         $this->form_validation->set_rules('tt_status', 'TT Status', 'trim');
-        $this->form_validation->set_rules('nutritional_status_weight_age', 'Weight-for-Age', 'trim');
-        $this->form_validation->set_rules('nutritional_status_height_age', 'Height-for-Age', 'trim');
-        $this->form_validation->set_rules('nutritional_status_weight_height', 'Weight-for-Height/Length', 'trim');
         $this->form_validation->set_rules('school_level', 'School Level', 'trim');
         $this->form_validation->set_rules('school_type', 'School Type', 'trim');
         $this->form_validation->set_rules('school_nutritional_status', 'School Nutritional Status', 'trim');
+        $this->form_validation->set_rules('adult_medical_history', 'Adult Medical History', 'trim|max_length[255]');
+        $this->form_validation->set_rules('adult_nutritional_status', 'Adult Nutritional Status', 'trim');
+        $this->form_validation->set_rules('adolescent_medical_history', 'Adolescent Medical History', 'trim|max_length[255]');
+        $this->form_validation->set_rules('adolescent_nutritional_status', 'Adolescent Nutritional Status', 'trim');
+        $this->form_validation->set_rules('senior_medical_history', 'Senior Citizen Medical History', 'trim|max_length[255]');
+        $this->form_validation->set_rules('senior_nutritional_status', 'Senior Citizen Nutritional Status', 'trim');
+        $this->form_validation->set_rules('wra_fp_method', 'Family Planning Method Used', 'trim|max_length[100]');
+        $this->form_validation->set_rules('wra_fp_facility_of_buying', 'Facility of Buying', 'trim|max_length[150]');
+        $this->form_validation->set_rules('wra_fp_status_of_application', 'FP Status of Application', 'trim');
+        $this->form_validation->set_rules('wra_papsmear_result', 'Pap Smear Result', 'trim|max_length[255]');
+        $this->form_validation->set_rules('wra_nutritional_status', 'WRA Nutritional Status', 'trim');
+        $this->form_validation->set_rules('child_immunization_status', 'Child Immunization Status', 'trim');
+        $this->form_validation->set_rules('child_newborn_screening', 'Newborn Screening', 'trim');
+        $this->form_validation->set_rules('child_newborn_screening_result', 'Newborn Screening Result', 'trim|max_length[255]');
+        $this->form_validation->set_rules('child_infant_feeding', 'Infant Feeding', 'trim');
+        $this->form_validation->set_rules('child_complementary_feeding', 'Complementary Feeding', 'trim');
 
         $this->form_validation->set_rules('immunization_status', 'Immun. Status', 'trim');
         $this->form_validation->set_rules('covid_vaccine_status', 'COVID-19 Immun. Status', 'trim');
@@ -402,7 +441,7 @@ class Residents extends MY_Controller
         }
     }
 
-    /** Maps posted scalar fields (everything except barangay_id/resident_no/audit columns) onto the residents row shape. */
+    /** Maps posted identity fields (everything else is split into per-section child tables) onto the residents row shape. */
     private function collect_post_fields()
     {
         $text = fn ($field) => trim((string) $this->input->post($field)) !== '' ? trim((string) $this->input->post($field)) : null;
@@ -414,19 +453,55 @@ class Residents extends MY_Controller
             'suffix' => $text('suffix'),
             'sex' => $this->input->post('sex'),
             'birthdate' => $this->input->post('birthdate'),
+        ];
+    }
+
+    /** Maps posted Personal Information fields onto the resident_personal row shape. */
+    private function collect_personal_fields()
+    {
+        $text = fn ($field) => trim((string) $this->input->post($field)) !== '' ? trim((string) $this->input->post($field)) : null;
+
+        return [
             'birthplace' => $text('birthplace'),
             'civil_status' => $this->input->post('civil_status'),
             'religion' => $text('religion'),
             'citizenship' => $this->input->post('citizenship') ?: 'Filipino',
             'blood_type' => $text('blood_type'),
+        ];
+    }
+
+    /** Maps posted Contact & Address fields onto the resident_contact row shape. */
+    private function collect_contact_fields()
+    {
+        $text = fn ($field) => trim((string) $this->input->post($field)) !== '' ? trim((string) $this->input->post($field)) : null;
+
+        return [
             'purok_sitio' => $text('purok_sitio'),
             'address_line' => $text('address_line'),
             'contact_number' => $text('contact_number'),
             'email' => $text('email'),
+        ];
+    }
+
+    /** Maps posted Occupation & Education fields onto the resident_work_education row shape. */
+    private function collect_work_education_fields()
+    {
+        $text = fn ($field) => trim((string) $this->input->post($field)) !== '' ? trim((string) $this->input->post($field)) : null;
+
+        return [
             'occupation' => $text('occupation'),
             'employer' => $text('employer'),
             'monthly_income' => $text('monthly_income'),
             'educational_attainment' => $text('educational_attainment'),
+        ];
+    }
+
+    /** Maps posted Government IDs fields onto the resident_government_ids row shape. */
+    private function collect_government_ids_fields()
+    {
+        $text = fn ($field) => trim((string) $this->input->post($field)) !== '' ? trim((string) $this->input->post($field)) : null;
+
+        return [
             'national_id_no' => $text('national_id_no'),
             'voters_id_no' => $text('voters_id_no'),
             'sss_no' => $text('sss_no'),
@@ -434,12 +509,34 @@ class Residents extends MY_Controller
             'pagibig_no' => $text('pagibig_no'),
             'philhealth_no' => $text('philhealth_no'),
             'tin_no' => $text('tin_no'),
+            'yakap_no' => $text('yakap_no'),
+        ];
+    }
+
+    /** Maps posted Program Flags fields onto the resident_program_flags row shape. */
+    private function collect_program_flags_fields()
+    {
+        $text = fn ($field) => trim((string) $this->input->post($field)) !== '' ? trim((string) $this->input->post($field)) : null;
+
+        return [
             'is_pwd' => $this->input->post('is_pwd') ? 1 : 0,
+            'is_senior_citizen' => Resident_model::is_senior($this->input->post('birthdate')) ? 1 : 0,
             'is_solo_parent' => $this->input->post('is_solo_parent') ? 1 : 0,
-            'is_4ps_beneficiary' => $this->input->post('is_4ps_beneficiary') ? 1 : 0,
+            // A varchar holding the 4Ps ID Number: NULL = not a beneficiary,
+            // '' = beneficiary with an unknown ID, otherwise the ID string.
+            'is_4ps_beneficiary' => $this->input->post('is_4ps_beneficiary') ? ($text('fourps_id_number') ?? '') : null,
             'is_ofw' => $this->input->post('is_ofw') ? 1 : 0,
             'is_indigenous' => $this->input->post('is_indigenous') ? 1 : 0,
             'indigenous_group' => $text('indigenous_group'),
+        ];
+    }
+
+    /** Maps the posted Remarks field onto the resident_remarks row shape. */
+    private function collect_remarks_fields()
+    {
+        $text = fn ($field) => trim((string) $this->input->post($field)) !== '' ? trim((string) $this->input->post($field)) : null;
+
+        return [
             'remarks' => $text('remarks'),
         ];
     }
@@ -451,6 +548,7 @@ class Residents extends MY_Controller
         $int = fn ($field) => trim((string) $this->input->post($field)) !== '' ? (int) $this->input->post($field) : null;
 
         return [
+            'type_of_resident' => in_array($this->input->post('type_of_resident'), Resident_household_model::TYPE_OF_RESIDENT_OPTIONS, true) ? $this->input->post('type_of_resident') : null,
             'household_no' => $text('household_no'),
             'relationship_to_head' => $text('relationship_to_head'),
             'ordinal_position' => $int('ordinal_position'),
@@ -466,14 +564,35 @@ class Residents extends MY_Controller
             'lmp_date' => $text('lmp_date'),
             'edc_date' => $text('edc_date'),
             'tt_status' => (in_array($this->input->post('tt_status'), Resident_household_model::TT_STATUS_OPTIONS, true)) ? $this->input->post('tt_status') : null,
-            'opt_plus_measured' => $this->input->post('opt_plus_measured') ? 1 : 0,
-            'nutritional_status_weight_age' => $text('nutritional_status_weight_age'),
-            'nutritional_status_height_age' => $text('nutritional_status_height_age'),
-            'nutritional_status_weight_height' => $text('nutritional_status_weight_height'),
             'school_level' => $text('school_level'),
             'school_type' => $text('school_type'),
             'school_weighed' => $this->input->post('school_weighed') ? 1 : 0,
             'school_nutritional_status' => $text('school_nutritional_status'),
+            'adult_medical_history' => $text('adult_medical_history'),
+            'adult_nutritional_status' => in_array($this->input->post('adult_nutritional_status'), Resident_household_model::LIFESTAGE_NUTRITIONAL_STATUS_OPTIONS, true) ? $this->input->post('adult_nutritional_status') : null,
+            'adolescent_medical_history' => $text('adolescent_medical_history'),
+            'adolescent_nutritional_status' => in_array($this->input->post('adolescent_nutritional_status'), Resident_household_model::LIFESTAGE_NUTRITIONAL_STATUS_OPTIONS, true) ? $this->input->post('adolescent_nutritional_status') : null,
+            'senior_medical_history' => $text('senior_medical_history'),
+            'senior_nutritional_status' => in_array($this->input->post('senior_nutritional_status'), Resident_household_model::LIFESTAGE_NUTRITIONAL_STATUS_OPTIONS, true) ? $this->input->post('senior_nutritional_status') : null,
+            'wra_mns_iron_folic' => $this->input->post('wra_mns_iron_folic') ? 1 : 0,
+            'wra_mns_calcium_carbonate' => $this->input->post('wra_mns_calcium_carbonate') ? 1 : 0,
+            'wra_mns_mms' => $this->input->post('wra_mns_mms') ? 1 : 0,
+            'wra_fp_method' => in_array($this->input->post('wra_fp_method'), Resident_household_model::WRA_FP_METHOD_OPTIONS, true) ? $this->input->post('wra_fp_method') : null,
+            'wra_fp_facility_of_buying' => $text('wra_fp_facility_of_buying'),
+            'wra_fp_status_of_application' => in_array($this->input->post('wra_fp_status_of_application'), Resident_household_model::WRA_FP_STATUS_OF_APPLICATION_OPTIONS, true) ? $this->input->post('wra_fp_status_of_application') : null,
+            'wra_papsmear_done' => $this->input->post('wra_papsmear_done') ? 1 : 0,
+            'wra_papsmear_result' => $text('wra_papsmear_result'),
+            'wra_nutritional_status' => in_array($this->input->post('wra_nutritional_status'), Resident_household_model::LIFESTAGE_NUTRITIONAL_STATUS_OPTIONS, true) ? $this->input->post('wra_nutritional_status') : null,
+            'child_immunization_status' => in_array($this->input->post('child_immunization_status'), Resident_household_model::CHILD_IMMUNIZATION_STATUS_OPTIONS, true) ? $this->input->post('child_immunization_status') : null,
+            'child_newborn_screening' => in_array($this->input->post('child_newborn_screening'), ['Yes', 'No'], true) ? $this->input->post('child_newborn_screening') : null,
+            'child_newborn_screening_result' => $this->input->post('child_newborn_screening') === 'Yes' ? $text('child_newborn_screening_result') : null,
+            'child_infant_feeding' => in_array($this->input->post('child_infant_feeding'), Resident_household_model::CHILD_INFANT_FEEDING_OPTIONS, true) ? $this->input->post('child_infant_feeding') : null,
+            'child_complementary_feeding' => in_array($this->input->post('child_complementary_feeding'), Resident_household_model::CHILD_COMPLEMENTARY_FEEDING_OPTIONS, true) ? $this->input->post('child_complementary_feeding') : null,
+            'child_mns_deworming' => $this->input->post('child_mns_deworming') ? 1 : 0,
+            'child_mns_vit_a' => $this->input->post('child_mns_vit_a') ? 1 : 0,
+            'child_mns_micronutrient_powder' => $this->input->post('child_mns_micronutrient_powder') ? 1 : 0,
+            'child_mns_ferrous_sulfate' => $this->input->post('child_mns_ferrous_sulfate') ? 1 : 0,
+            'child_mns_multivitamins' => $this->input->post('child_mns_multivitamins') ? 1 : 0,
         ];
     }
 

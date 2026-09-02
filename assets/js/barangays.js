@@ -4,6 +4,7 @@
     $(function () {
         var table = initServerDataTable('#barangays_table', BASE_URL + 'barangays/datatable', [
             { data: 'name' },
+            { data: 'prefix' },
             { data: 'municipality_name' },
             { data: 'province_name' },
             { data: 'poblacion', orderable: false, searchable: false },

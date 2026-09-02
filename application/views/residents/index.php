@@ -59,7 +59,7 @@
             <table id="residents_table" class="table table-hover align-middle w-100">
                 <thead>
                     <tr>
-                        <th>Resident No.</th>
+                        <th>Resident ID Number</th>
                         <th>Household No.</th>
                         <th>Name</th>
                         <th>Barangay</th>

@@ -49,6 +49,11 @@
                        value="<?= set_value('code', $municipality->code ?? '') ?>">
             </div>
             <div class="mb-3">
+                <label class="form-label">Prefix <small class="text-muted">(used in the Resident ID Number, e.g. PAL)</small></label>
+                <input type="text" name="prefix" class="form-control" maxlength="10" style="text-transform:uppercase"
+                       value="<?= set_value('prefix', $municipality->prefix ?? '') ?>">
+            </div>
+            <div class="mb-3">
                 <label class="form-label">Description</label>
                 <textarea name="description" class="form-control" rows="3"><?= set_value('description', $municipality->description ?? '') ?></textarea>
             </div>

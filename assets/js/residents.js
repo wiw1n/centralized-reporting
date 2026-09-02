@@ -63,14 +63,77 @@
             toggleIndigenousRow();
         }
 
-        // Sidebar section nav: highlight the section currently in view as the
-        // long form is scrolled, using Bootstrap's ScrollSpy against <body>.
-        if ($('#form_section_nav').length && window.bootstrap && window.bootstrap.ScrollSpy) {
-            new bootstrap.ScrollSpy(document.body, {
-                target: '#form_section_nav',
-                rootMargin: '0px 0px -70%',
-                smoothScroll: true
+        var $fourpsCheckbox = $('#is_4ps_beneficiary');
+        var $fourpsRow = $('#fourps_id_row');
+        if ($fourpsCheckbox.length && $fourpsRow.length) {
+            function toggleFourpsRow() {
+                $fourpsRow.toggle($fourpsCheckbox.is(':checked'));
+            }
+            $fourpsCheckbox.on('change', toggleFourpsRow);
+            toggleFourpsRow();
+        }
+
+        var $papsmearCheckbox = $('#wra_papsmear_done');
+        var $papsmearRow = $('#wra_papsmear_result_row');
+        if ($papsmearCheckbox.length && $papsmearRow.length) {
+            function togglePapsmearRow() {
+                $papsmearRow.toggle($papsmearCheckbox.is(':checked'));
+            }
+            $papsmearCheckbox.on('change', togglePapsmearRow);
+            togglePapsmearRow();
+        }
+
+        var $newbornScreening = $('#child_newborn_screening');
+        var $newbornScreeningRow = $('#child_newborn_screening_result_row');
+        if ($newbornScreening.length && $newbornScreeningRow.length) {
+            function toggleNewbornScreeningRow() {
+                $newbornScreeningRow.toggle($newbornScreening.val() === 'Yes');
+            }
+            $newbornScreening.on('change', toggleNewbornScreeningRow);
+            toggleNewbornScreeningRow();
+        }
+
+        // Sidebar section nav: show one section card at a time. Every
+        // .form-section is hidden except the one whose nav link was clicked.
+        var $nav = $('#form_section_nav');
+        if ($nav.length) {
+            var $navLinks = $nav.find('.list-group-item[href^="#section-"]');
+            var $sections = $('.form-section');
+            var form = $sections.first().closest('form').get(0);
+
+            function showSection(id) {
+                var $target = $('#' + id);
+                if (!$target.hasClass('form-section')) {
+                    return;
+                }
+                $sections.addClass('d-none');
+                $target.removeClass('d-none');
+                $navLinks.removeClass('active').filter('[href="#' + id + '"]').addClass('active');
+            }
+
+            $navLinks.on('click', function (e) {
+                e.preventDefault();
+                showSection(this.getAttribute('href').slice(1));
             });
+
+            // Native validation cannot focus a control inside a hidden
+            // section, so reveal the section holding the first invalid field.
+            if (form) {
+                form.addEventListener('invalid', function (e) {
+                    if (form.querySelector(':invalid') !== e.target) {
+                        return;
+                    }
+                    var section = e.target.closest('.form-section');
+                    if (section) {
+                        showSection(section.id);
+                    }
+                }, true);
+            }
+
+            // Show Personal Information by default; an explicit hash wins.
+            $sections.addClass('d-none');
+            var initial = (window.location.hash || '').replace('#', '');
+            showSection(initial && $('#' + initial).hasClass('form-section') ? initial : 'section-personal');
         }
     });
 })(jQuery);

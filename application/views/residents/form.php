@@ -1,18 +1,28 @@
 <?php
-$civil_status_options = Resident_model::CIVIL_STATUS_OPTIONS;
-$education_options = Resident_model::EDUCATION_OPTIONS;
-$blood_type_options = Resident_model::BLOOD_TYPE_OPTIONS;
+$civil_status_options = Resident_personal_model::CIVIL_STATUS_OPTIONS;
+$education_options = Resident_work_education_model::EDUCATION_OPTIONS;
+$blood_type_options = Resident_personal_model::BLOOD_TYPE_OPTIONS;
+$type_of_resident_options = Resident_household_model::TYPE_OF_RESIDENT_OPTIONS;
 $relationship_options = Resident_household_model::RELATIONSHIP_OPTIONS;
 $tt_status_options = Resident_household_model::TT_STATUS_OPTIONS;
-$weight_age_options = Resident_household_model::NUTRITIONAL_STATUS_WEIGHT_AGE_OPTIONS;
-$height_age_options = Resident_household_model::NUTRITIONAL_STATUS_HEIGHT_AGE_OPTIONS;
-$weight_height_options = Resident_household_model::NUTRITIONAL_STATUS_WEIGHT_HEIGHT_OPTIONS;
 $school_level_options = Resident_household_model::SCHOOL_LEVEL_OPTIONS;
 $school_type_options = Resident_household_model::SCHOOL_TYPE_OPTIONS;
 $school_nutrition_options = Resident_household_model::SCHOOL_NUTRITIONAL_STATUS_OPTIONS;
+$lifestage_nutrition_options = Resident_household_model::LIFESTAGE_NUTRITIONAL_STATUS_OPTIONS;
+$wra_fp_method_options = Resident_household_model::WRA_FP_METHOD_OPTIONS;
+$wra_fp_status_of_application_options = Resident_household_model::WRA_FP_STATUS_OF_APPLICATION_OPTIONS;
+$child_immunization_status_options = Resident_household_model::CHILD_IMMUNIZATION_STATUS_OPTIONS;
+$child_infant_feeding_options = Resident_household_model::CHILD_INFANT_FEEDING_OPTIONS;
+$child_complementary_feeding_options = Resident_household_model::CHILD_COMPLEMENTARY_FEEDING_OPTIONS;
 $immunization_status_options = Resident_data_survey_model::IMMUNIZATION_STATUS_OPTIONS;
 $covid_vaccine_status_options = Resident_data_survey_model::COVID_VACCINE_STATUS_OPTIONS;
 $r = $resident;
+$personal = $resident_personal ?? null;
+$contact = $resident_contact ?? null;
+$work = $resident_work_education ?? null;
+$govid = $resident_government_ids ?? null;
+$flags = $resident_program_flags ?? null;
+$rmk = $resident_remarks ?? null;
 $hh = $resident_household ?? null;
 $ds = $resident_data_survey ?? null;
 ?>
@@ -27,8 +37,8 @@ $ds = $resident_data_survey ?? null;
             <div class="card-body p-2">
                 <div class="small text-uppercase text-muted fw-semibold px-2 pt-1 pb-2">Sections</div>
                 <div class="list-group list-group-flush">
-                    <a class="list-group-item list-group-item-action" href="#section-location"><i class="bi bi-geo-alt-fill"></i> Location</a>
                     <a class="list-group-item list-group-item-action" href="#section-personal"><i class="bi bi-person-badge-fill"></i> Personal Information</a>
+                    <a class="list-group-item list-group-item-action" href="#section-location"><i class="bi bi-geo-alt-fill"></i> Location</a>
                     <a class="list-group-item list-group-item-action" href="#section-contact"><i class="bi bi-telephone-fill"></i> Contact &amp; Address</a>
                     <a class="list-group-item list-group-item-action" href="#section-occupation"><i class="bi bi-briefcase-fill"></i> Occupation &amp; Education</a>
                     <a class="list-group-item list-group-item-action" href="#section-gov-ids"><i class="bi bi-postcard-fill"></i> Government IDs</a>
@@ -54,7 +64,7 @@ $ds = $resident_data_survey ?? null;
                             <input type="text" class="form-control" value="<?= html_escape($r->id) ?>" disabled>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Resident No.</label>
+                            <label class="form-label">Resident ID Number</label>
                             <input type="text" class="form-control" value="<?= html_escape($r->resident_no) ?>" disabled>
                         </div>
                     </div>
@@ -180,14 +190,14 @@ $ds = $resident_data_survey ?? null;
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Birthplace</label>
-                            <input type="text" name="birthplace" class="form-control" maxlength="150" value="<?= set_value('birthplace', $r->birthplace ?? '') ?>">
+                            <input type="text" name="birthplace" class="form-control" maxlength="150" value="<?= set_value('birthplace', $personal->birthplace ?? '') ?>">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Civil Status</label>
                             <select name="civil_status" class="form-select" required>
                                 <option value="">-- Select --</option>
                                 <?php foreach ($civil_status_options as $opt): ?>
-                                    <option value="<?= html_escape($opt) ?>" <?= set_value('civil_status', $r->civil_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <option value="<?= html_escape($opt) ?>" <?= set_value('civil_status', $personal->civil_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -195,18 +205,18 @@ $ds = $resident_data_survey ?? null;
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Religion</label>
-                            <input type="text" name="religion" class="form-control" maxlength="50" value="<?= set_value('religion', $r->religion ?? '') ?>">
+                            <input type="text" name="religion" class="form-control" maxlength="50" value="<?= set_value('religion', $personal->religion ?? '') ?>">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Citizenship</label>
-                            <input type="text" name="citizenship" class="form-control" maxlength="50" value="<?= set_value('citizenship', $r->citizenship ?? 'Filipino') ?>">
+                            <input type="text" name="citizenship" class="form-control" maxlength="50" value="<?= set_value('citizenship', $personal->citizenship ?? 'Filipino') ?>">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Blood Type</label>
                             <select name="blood_type" class="form-select">
                                 <option value="">-- Select --</option>
                                 <?php foreach ($blood_type_options as $opt): ?>
-                                    <option value="<?= html_escape($opt) ?>" <?= set_value('blood_type', $r->blood_type ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <option value="<?= html_escape($opt) ?>" <?= set_value('blood_type', $personal->blood_type ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -220,19 +230,19 @@ $ds = $resident_data_survey ?? null;
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Purok / Sitio</label>
-                            <input type="text" name="purok_sitio" class="form-control" maxlength="100" value="<?= set_value('purok_sitio', $r->purok_sitio ?? '') ?>">
+                            <input type="text" name="purok_sitio" class="form-control" maxlength="100" value="<?= set_value('purok_sitio', $contact->purok_sitio ?? '') ?>">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Address Line</label>
-                            <input type="text" name="address_line" class="form-control" maxlength="150" value="<?= set_value('address_line', $r->address_line ?? '') ?>">
+                            <input type="text" name="address_line" class="form-control" maxlength="150" value="<?= set_value('address_line', $contact->address_line ?? '') ?>">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Contact Number</label>
-                            <input type="text" name="contact_number" class="form-control" maxlength="20" value="<?= set_value('contact_number', $r->contact_number ?? '') ?>">
+                            <input type="text" name="contact_number" class="form-control" maxlength="20" value="<?= set_value('contact_number', $contact->contact_number ?? '') ?>">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control" maxlength="100" value="<?= set_value('email', $r->email ?? '') ?>">
+                            <input type="email" name="email" class="form-control" maxlength="100" value="<?= set_value('email', $contact->email ?? '') ?>">
                         </div>
                     </div>
                 </div>
@@ -244,22 +254,22 @@ $ds = $resident_data_survey ?? null;
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Occupation</label>
-                            <input type="text" name="occupation" class="form-control" maxlength="150" value="<?= set_value('occupation', $r->occupation ?? '') ?>">
+                            <input type="text" name="occupation" class="form-control" maxlength="150" value="<?= set_value('occupation', $work->occupation ?? '') ?>">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Employer</label>
-                            <input type="text" name="employer" class="form-control" maxlength="150" value="<?= set_value('employer', $r->employer ?? '') ?>">
+                            <input type="text" name="employer" class="form-control" maxlength="150" value="<?= set_value('employer', $work->employer ?? '') ?>">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Monthly Income</label>
-                            <input type="number" step="0.01" name="monthly_income" class="form-control" value="<?= set_value('monthly_income', $r->monthly_income ?? '') ?>">
+                            <input type="number" step="0.01" name="monthly_income" class="form-control" value="<?= set_value('monthly_income', $work->monthly_income ?? '') ?>">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Educational Attainment</label>
                             <select name="educational_attainment" class="form-select">
                                 <option value="">-- Select --</option>
                                 <?php foreach ($education_options as $opt): ?>
-                                    <option value="<?= html_escape($opt) ?>" <?= set_value('educational_attainment', $r->educational_attainment ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <option value="<?= html_escape($opt) ?>" <?= set_value('educational_attainment', $work->educational_attainment ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -273,33 +283,37 @@ $ds = $resident_data_survey ?? null;
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <label class="form-label">National ID (PhilSys) No.</label>
-                            <input type="text" name="national_id_no" class="form-control" maxlength="50" value="<?= set_value('national_id_no', $r->national_id_no ?? '') ?>">
+                            <input type="text" name="national_id_no" class="form-control" maxlength="50" value="<?= set_value('national_id_no', $govid->national_id_no ?? '') ?>">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Voter's ID No.</label>
-                            <input type="text" name="voters_id_no" class="form-control" maxlength="50" value="<?= set_value('voters_id_no', $r->voters_id_no ?? '') ?>">
+                            <input type="text" name="voters_id_no" class="form-control" maxlength="50" value="<?= set_value('voters_id_no', $govid->voters_id_no ?? '') ?>">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">SSS No.</label>
-                            <input type="text" name="sss_no" class="form-control" maxlength="50" value="<?= set_value('sss_no', $r->sss_no ?? '') ?>">
+                            <input type="text" name="sss_no" class="form-control" maxlength="50" value="<?= set_value('sss_no', $govid->sss_no ?? '') ?>">
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">GSIS No.</label>
-                            <input type="text" name="gsis_no" class="form-control" maxlength="50" value="<?= set_value('gsis_no', $r->gsis_no ?? '') ?>">
+                            <input type="text" name="gsis_no" class="form-control" maxlength="50" value="<?= set_value('gsis_no', $govid->gsis_no ?? '') ?>">
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">Pag-IBIG No.</label>
-                            <input type="text" name="pagibig_no" class="form-control" maxlength="50" value="<?= set_value('pagibig_no', $r->pagibig_no ?? '') ?>">
+                            <input type="text" name="pagibig_no" class="form-control" maxlength="50" value="<?= set_value('pagibig_no', $govid->pagibig_no ?? '') ?>">
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">PhilHealth No.</label>
-                            <input type="text" name="philhealth_no" class="form-control" maxlength="50" value="<?= set_value('philhealth_no', $r->philhealth_no ?? '') ?>">
+                            <input type="text" name="philhealth_no" class="form-control" maxlength="50" value="<?= set_value('philhealth_no', $govid->philhealth_no ?? '') ?>">
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-3">
                             <label class="form-label">TIN No.</label>
-                            <input type="text" name="tin_no" class="form-control" maxlength="50" value="<?= set_value('tin_no', $r->tin_no ?? '') ?>">
+                            <input type="text" name="tin_no" class="form-control" maxlength="50" value="<?= set_value('tin_no', $govid->tin_no ?? '') ?>">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Yakap No.</label>
+                            <input type="text" name="yakap_no" class="form-control" maxlength="50" value="<?= set_value('yakap_no', $govid->yakap_no ?? '') ?>">
                         </div>
                     </div>
                 </div>
@@ -310,34 +324,40 @@ $ds = $resident_data_survey ?? null;
                 <div class="card-body">
                     <div class="row">
                         <div class="col-auto form-check mb-2">
-                            <input type="checkbox" name="is_pwd" value="1" class="form-check-input" id="is_pwd" <?= set_value('is_pwd', $r->is_pwd ?? 0) ? 'checked' : '' ?>>
+                            <input type="checkbox" name="is_pwd" value="1" class="form-check-input" id="is_pwd" <?= set_value('is_pwd', $flags->is_pwd ?? 0) ? 'checked' : '' ?>>
                             <label class="form-check-label" for="is_pwd">PWD</label>
                         </div>
                         <div class="col-auto form-check mb-2">
-                            <input type="checkbox" class="form-check-input" id="is_senior_display" disabled <?= !empty($r->is_senior_citizen) ? 'checked' : '' ?>>
+                            <input type="checkbox" class="form-check-input" id="is_senior_display" disabled <?= !empty($flags->is_senior_citizen) ? 'checked' : '' ?>>
                             <label class="form-check-label" for="is_senior_display">Senior Citizen <small class="text-muted">(computed from birthdate)</small></label>
                         </div>
                         <div class="col-auto form-check mb-2">
-                            <input type="checkbox" name="is_solo_parent" value="1" class="form-check-input" id="is_solo_parent" <?= set_value('is_solo_parent', $r->is_solo_parent ?? 0) ? 'checked' : '' ?>>
+                            <input type="checkbox" name="is_solo_parent" value="1" class="form-check-input" id="is_solo_parent" <?= set_value('is_solo_parent', $flags->is_solo_parent ?? 0) ? 'checked' : '' ?>>
                             <label class="form-check-label" for="is_solo_parent">Solo Parent</label>
                         </div>
                         <div class="col-auto form-check mb-2">
-                            <input type="checkbox" name="is_4ps_beneficiary" value="1" class="form-check-input" id="is_4ps_beneficiary" <?= set_value('is_4ps_beneficiary', $r->is_4ps_beneficiary ?? 0) ? 'checked' : '' ?>>
+                            <input type="checkbox" name="is_4ps_beneficiary" value="1" class="form-check-input" id="is_4ps_beneficiary" <?= set_value('is_4ps_beneficiary', ($flags->is_4ps_beneficiary ?? null) !== null ? '1' : '0') ? 'checked' : '' ?>>
                             <label class="form-check-label" for="is_4ps_beneficiary">4Ps Beneficiary</label>
                         </div>
                         <div class="col-auto form-check mb-2">
-                            <input type="checkbox" name="is_ofw" value="1" class="form-check-input" id="is_ofw" <?= set_value('is_ofw', $r->is_ofw ?? 0) ? 'checked' : '' ?>>
+                            <input type="checkbox" name="is_ofw" value="1" class="form-check-input" id="is_ofw" <?= set_value('is_ofw', $flags->is_ofw ?? 0) ? 'checked' : '' ?>>
                             <label class="form-check-label" for="is_ofw">OFW</label>
                         </div>
                         <div class="col-auto form-check mb-2">
-                            <input type="checkbox" name="is_indigenous" value="1" class="form-check-input" id="is_indigenous" <?= set_value('is_indigenous', $r->is_indigenous ?? 0) ? 'checked' : '' ?>>
+                            <input type="checkbox" name="is_indigenous" value="1" class="form-check-input" id="is_indigenous" <?= set_value('is_indigenous', $flags->is_indigenous ?? 0) ? 'checked' : '' ?>>
                             <label class="form-check-label" for="is_indigenous">Indigenous Person</label>
+                        </div>
+                    </div>
+                    <div class="row" id="fourps_id_row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">4Ps ID Number</label>
+                            <input type="text" name="fourps_id_number" class="form-control" maxlength="50" value="<?= set_value('fourps_id_number', $flags->is_4ps_beneficiary ?? '') ?>">
                         </div>
                     </div>
                     <div class="row" id="indigenous_group_row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Indigenous Group / Tribe</label>
-                            <input type="text" name="indigenous_group" class="form-control" maxlength="100" value="<?= set_value('indigenous_group', $r->indigenous_group ?? '') ?>">
+                            <input type="text" name="indigenous_group" class="form-control" maxlength="100" value="<?= set_value('indigenous_group', $flags->indigenous_group ?? '') ?>">
                         </div>
                     </div>
                 </div>
@@ -347,6 +367,15 @@ $ds = $resident_data_survey ?? null;
                 <div class="card-header"><h5 class="mb-0"><i class="bi bi-house-heart-fill"></i> Household Information</h5></div>
                 <div class="card-body">
                     <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Type of Resident</label>
+                            <select name="type_of_resident" class="form-select">
+                                <option value="">-- Select --</option>
+                                <?php foreach ($type_of_resident_options as $opt): ?>
+                                    <option value="<?= html_escape($opt) ?>" <?= set_value('type_of_resident', $hh->type_of_resident ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Household No.</label>
                             <input type="text" name="household_no" class="form-control" maxlength="30" value="<?= set_value('household_no', $hh->household_no ?? '') ?>" placeholder="e.g. HH-B1-0001">
@@ -371,7 +400,7 @@ $ds = $resident_data_survey ?? null;
                     </div>
 
                     <div class="border-top pt-2 mt-2">
-                        <div class="small text-muted text-uppercase fw-semibold mb-1">Present Illness</div>
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">Medical History</div>
                         <div class="row align-items-end">
                             <div class="col-auto form-check">
                                 <input type="checkbox" name="has_hypertension" value="1" class="form-check-input" id="has_hypertension" <?= set_value('has_hypertension', $hh->has_hypertension ?? 0) ? 'checked' : '' ?>>
@@ -391,85 +420,12 @@ $ds = $resident_data_survey ?? null;
                             </div>
                         </div>
                     </div>
-
-                    <div class="row mt-2">
-                        <div class="col-auto form-check">
-                            <input type="checkbox" name="is_pregnant" value="1" class="form-check-input" id="is_pregnant" <?= set_value('is_pregnant', $hh->is_pregnant ?? 0) ? 'checked' : '' ?>>
-                            <label class="form-check-label" for="is_pregnant">Pregnant</label>
-                        </div>
-                        <div class="col-auto form-check">
-                            <input type="checkbox" name="is_lactating" value="1" class="form-check-input" id="is_lactating" <?= set_value('is_lactating', $hh->is_lactating ?? 0) ? 'checked' : '' ?>>
-                            <label class="form-check-label" for="is_lactating">Lactating</label>
-                        </div>
-                        <div class="col-md-1 mb-2">
-                            <label class="form-label small mb-1">Gravida (G)</label>
-                            <input type="number" name="gravida" class="form-control form-control-sm" min="0" max="30" value="<?= set_value('gravida', $hh->gravida ?? '') ?>">
-                        </div>
-                        <div class="col-md-1 mb-2">
-                            <label class="form-label small mb-1">Para (P)</label>
-                            <input type="number" name="para" class="form-control form-control-sm" min="0" max="30" value="<?= set_value('para', $hh->para ?? '') ?>">
-                        </div>
-                        <div class="col-md-2 mb-2">
-                            <label class="form-label small mb-1">LMP</label>
-                            <input type="date" name="lmp_date" class="form-control form-control-sm" value="<?= set_value('lmp_date', $hh->lmp_date ?? '') ?>">
-                        </div>
-                        <div class="col-md-2 mb-2">
-                            <label class="form-label small mb-1">EDC</label>
-                            <input type="date" name="edc_date" class="form-control form-control-sm" value="<?= set_value('edc_date', $hh->edc_date ?? '') ?>">
-                        </div>
-                        <div class="col-md-2 mb-2">
-                            <label class="form-label small mb-1">TT Status</label>
-                            <select name="tt_status" class="form-select form-select-sm">
-                                <option value="">-- N/A --</option>
-                                <?php foreach ($tt_status_options as $opt): ?>
-                                    <option value="<?= html_escape($opt) ?>" <?= set_value('tt_status', $hh->tt_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
-
+                    
                     <div class="border-top pt-2 mt-2">
-                        <div class="small text-muted text-uppercase fw-semibold mb-1">Nutrition Profile &mdash; Preschool (0-59 mos.)</div>
-                        <div class="row align-items-end">
-                            <div class="col-auto form-check">
-                                <input type="checkbox" name="opt_plus_measured" value="1" class="form-check-input" id="opt_plus_measured" <?= set_value('opt_plus_measured', $hh->opt_plus_measured ?? 0) ? 'checked' : '' ?>>
-                                <label class="form-check-label" for="opt_plus_measured">Measured during OPT Plus <small class="text-muted">(preschool child, 0-59 mos.)</small></label>
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <label class="form-label small mb-1">Weight-for-Age</label>
-                                <select name="nutritional_status_weight_age" class="form-select form-select-sm">
-                                    <option value="">-- N/A --</option>
-                                    <?php foreach ($weight_age_options as $opt): ?>
-                                        <option value="<?= html_escape($opt) ?>" <?= set_value('nutritional_status_weight_age', $hh->nutritional_status_weight_age ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <label class="form-label small mb-1">Height-for-Age</label>
-                                <select name="nutritional_status_height_age" class="form-select form-select-sm">
-                                    <option value="">-- N/A --</option>
-                                    <?php foreach ($height_age_options as $opt): ?>
-                                        <option value="<?= html_escape($opt) ?>" <?= set_value('nutritional_status_height_age', $hh->nutritional_status_height_age ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <label class="form-label small mb-1">Weight-for-Height/Length</label>
-                                <select name="nutritional_status_weight_height" class="form-select form-select-sm">
-                                    <option value="">-- N/A --</option>
-                                    <?php foreach ($weight_height_options as $opt): ?>
-                                        <option value="<?= html_escape($opt) ?>" <?= set_value('nutritional_status_weight_height', $hh->nutritional_status_weight_height ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="border-top pt-2 mt-2">
-                        <div class="small text-muted text-uppercase fw-semibold mb-1">Nutrition Profile &mdash; School (Day Care/Kinder/Grades 1-6)</div>
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">Child</div>
                         <div class="row align-items-end">
                             <div class="col-md-3 mb-2">
-                                <label class="form-label small mb-1">School Level</label>
+                                <label class="form-label small mb-1">School Level <span class="text-muted">(Day Care/Kinder/Grades 1-6)</span></label>
                                 <select name="school_level" class="form-select form-select-sm">
                                     <option value="">-- Not Enrolled --</option>
                                     <?php foreach ($school_level_options as $opt): ?>
@@ -491,11 +447,236 @@ $ds = $resident_data_survey ?? null;
                                 <label class="form-check-label" for="school_weighed">Weighed at start of school year</label>
                             </div>
                             <div class="col-md-3 mb-2">
-                                <label class="form-label small mb-1">Nutritional Status</label>
+                                <label class="form-label small mb-1">Nutritional Status <span class="text-muted">(School)</span></label>
                                 <select name="school_nutritional_status" class="form-select form-select-sm">
                                     <option value="">-- N/A --</option>
                                     <?php foreach ($school_nutrition_options as $opt): ?>
                                         <option value="<?= html_escape($opt) ?>" <?= set_value('school_nutritional_status', $hh->school_nutritional_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row align-items-end">
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Immunization Status</label>
+                                <select name="child_immunization_status" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <?php foreach ($child_immunization_status_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('child_immunization_status', $hh->child_immunization_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label small mb-1">Newborn Screening</label>
+                                <select name="child_newborn_screening" id="child_newborn_screening" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <option value="Yes" <?= set_value('child_newborn_screening', $hh->child_newborn_screening ?? '') === 'Yes' ? 'selected' : '' ?>>Yes</option>
+                                    <option value="No" <?= set_value('child_newborn_screening', $hh->child_newborn_screening ?? '') === 'No' ? 'selected' : '' ?>>No</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-2" id="child_newborn_screening_result_row">
+                                <label class="form-label small mb-1">Newborn Screening Result <span class="text-muted">(if Yes)</span></label>
+                                <input type="text" name="child_newborn_screening_result" class="form-control form-control-sm" maxlength="255" value="<?= set_value('child_newborn_screening_result', $hh->child_newborn_screening_result ?? '') ?>">
+                            </div>
+                        </div>
+                        <div class="row align-items-end">
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label small mb-1">Infant Feeding <span class="text-muted">(&lt; 6 mos.)</span></label>
+                                <select name="child_infant_feeding" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <?php foreach ($child_infant_feeding_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('child_infant_feeding', $hh->child_infant_feeding ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label small mb-1">Complementary Feeding <span class="text-muted">(6 mos. - 2 y/o)</span></label>
+                                <select name="child_complementary_feeding" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <?php foreach ($child_complementary_feeding_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('child_complementary_feeding', $hh->child_complementary_feeding ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row align-items-end">
+                            <div class="col-12 mb-2">
+                                <label class="form-label small mb-1">Micronutrient Supplementation / Deworming</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="child_mns_deworming" value="1" class="form-check-input" id="child_mns_deworming" <?= set_value('child_mns_deworming', $hh->child_mns_deworming ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="child_mns_deworming">Deworming</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="child_mns_vit_a" value="1" class="form-check-input" id="child_mns_vit_a" <?= set_value('child_mns_vit_a', $hh->child_mns_vit_a ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="child_mns_vit_a">Vitamin A supplied</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="child_mns_micronutrient_powder" value="1" class="form-check-input" id="child_mns_micronutrient_powder" <?= set_value('child_mns_micronutrient_powder', $hh->child_mns_micronutrient_powder ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="child_mns_micronutrient_powder">Micronutrient powder</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="child_mns_ferrous_sulfate" value="1" class="form-check-input" id="child_mns_ferrous_sulfate" <?= set_value('child_mns_ferrous_sulfate', $hh->child_mns_ferrous_sulfate ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="child_mns_ferrous_sulfate">Ferrous sulfate</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="child_mns_multivitamins" value="1" class="form-check-input" id="child_mns_multivitamins" <?= set_value('child_mns_multivitamins', $hh->child_mns_multivitamins ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="child_mns_multivitamins">Multiple vitamins</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-top pt-2 mt-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">Women of Reproductive Age (15 - 49 years old &mdash; women)</div>
+                        <div class="row align-items-end">
+                            <div class="col-auto form-check mb-2">
+                                <input type="checkbox" name="is_pregnant" value="1" class="form-check-input" id="is_pregnant" <?= set_value('is_pregnant', $hh->is_pregnant ?? 0) ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="is_pregnant">Pregnant</label>
+                            </div>
+                            <div class="col-auto form-check mb-2">
+                                <input type="checkbox" name="is_lactating" value="1" class="form-check-input" id="is_lactating" <?= set_value('is_lactating', $hh->is_lactating ?? 0) ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="is_lactating">Lactating</label>
+                            </div>
+                            <div class="col-md-1 mb-2">
+                                <label class="form-label small mb-1">Gravida (G)</label>
+                                <input type="number" name="gravida" class="form-control form-control-sm" min="0" max="30" value="<?= set_value('gravida', $hh->gravida ?? '') ?>">
+                            </div>
+                            <div class="col-md-1 mb-2">
+                                <label class="form-label small mb-1">Para (P)</label>
+                                <input type="number" name="para" class="form-control form-control-sm" min="0" max="30" value="<?= set_value('para', $hh->para ?? '') ?>">
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label small mb-1">LMP</label>
+                                <input type="date" name="lmp_date" class="form-control form-control-sm" value="<?= set_value('lmp_date', $hh->lmp_date ?? '') ?>">
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label small mb-1">EDC</label>
+                                <input type="date" name="edc_date" class="form-control form-control-sm" value="<?= set_value('edc_date', $hh->edc_date ?? '') ?>">
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label small mb-1">TT Status</label>
+                                <select name="tt_status" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <?php foreach ($tt_status_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('tt_status', $hh->tt_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-12"><hr class="my-2"></div>
+                            <div class="col-12 mb-2">
+                                <label class="form-label small mb-1">Micronutrient Supplementation</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="wra_mns_iron_folic" value="1" class="form-check-input" id="wra_mns_iron_folic" <?= set_value('wra_mns_iron_folic', $hh->wra_mns_iron_folic ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="wra_mns_iron_folic">Iron + Folic Acid</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="wra_mns_calcium_carbonate" value="1" class="form-check-input" id="wra_mns_calcium_carbonate" <?= set_value('wra_mns_calcium_carbonate', $hh->wra_mns_calcium_carbonate ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="wra_mns_calcium_carbonate">Calcium Carbonate</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="wra_mns_mms" value="1" class="form-check-input" id="wra_mns_mms" <?= set_value('wra_mns_mms', $hh->wra_mns_mms ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="wra_mns_mms">Multiple Micro-nutrient Supplement</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Family Planning Method Used</label>
+                                <select name="wra_fp_method" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <?php foreach ($wra_fp_method_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('wra_fp_method', $hh->wra_fp_method ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Facility of Buying</label>
+                                <input type="text" name="wra_fp_facility_of_buying" class="form-control form-control-sm" maxlength="150" value="<?= set_value('wra_fp_facility_of_buying', $hh->wra_fp_facility_of_buying ?? '') ?>">
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">FP Status of Application</label>
+                                <select name="wra_fp_status_of_application" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <?php foreach ($wra_fp_status_of_application_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('wra_fp_status_of_application', $hh->wra_fp_status_of_application ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Nutritional Status</label>
+                                <select name="wra_nutritional_status" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <?php foreach ($lifestage_nutrition_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('wra_nutritional_status', $hh->wra_nutritional_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-auto form-check mb-2">
+                                <input type="checkbox" name="wra_papsmear_done" value="1" class="form-check-input" id="wra_papsmear_done" <?= set_value('wra_papsmear_done', $hh->wra_papsmear_done ?? 0) ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="wra_papsmear_done">Pap Smear Done</label>
+                            </div>
+                        </div>
+                        <div class="row align-items-end" id="wra_papsmear_result_row">
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label small mb-1">Pap Smear Result</label>
+                                <input type="text" name="wra_papsmear_result" class="form-control form-control-sm" maxlength="255" value="<?= set_value('wra_papsmear_result', $hh->wra_papsmear_result ?? '') ?>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-2 mt-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">Adult (20 - 59 years old)</div>
+                        <div class="row align-items-end">
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label small mb-1">Medical History</label>
+                                <textarea name="adult_medical_history" class="form-control form-control-sm" rows="2" maxlength="255"><?= set_value('adult_medical_history', $hh->adult_medical_history ?? '') ?></textarea>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Nutritional Status</label>
+                                <select name="adult_nutritional_status" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <?php foreach ($lifestage_nutrition_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('adult_nutritional_status', $hh->adult_nutritional_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-2 mt-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">Adolescent</div>
+                        <div class="row align-items-end">
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label small mb-1">Medical History</label>
+                                <textarea name="adolescent_medical_history" class="form-control form-control-sm" rows="2" maxlength="255"><?= set_value('adolescent_medical_history', $hh->adolescent_medical_history ?? '') ?></textarea>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Nutritional Status</label>
+                                <select name="adolescent_nutritional_status" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <?php foreach ($lifestage_nutrition_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('adolescent_nutritional_status', $hh->adolescent_nutritional_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-2 mt-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">Senior Citizen</div>
+                        <div class="row align-items-end">
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label small mb-1">Medical History</label>
+                                <textarea name="senior_medical_history" class="form-control form-control-sm" rows="2" maxlength="255"><?= set_value('senior_medical_history', $hh->senior_medical_history ?? '') ?></textarea>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Nutritional Status</label>
+                                <select name="senior_nutritional_status" class="form-select form-select-sm">
+                                    <option value="">-- N/A --</option>
+                                    <?php foreach ($lifestage_nutrition_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('senior_nutritional_status', $hh->senior_nutritional_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -600,7 +781,7 @@ $ds = $resident_data_survey ?? null;
             <div id="section-remarks" class="card shadow-sm form-section mb-4">
                 <div class="card-header"><h5 class="mb-0"><i class="bi bi-chat-left-text-fill"></i> Remarks</h5></div>
                 <div class="card-body">
-                    <textarea name="remarks" class="form-control" rows="2"><?= set_value('remarks', $r->remarks ?? '') ?></textarea>
+                    <textarea name="remarks" class="form-control" rows="2"><?= set_value('remarks', $rmk->remarks ?? '') ?></textarea>
                 </div>
             </div>
 

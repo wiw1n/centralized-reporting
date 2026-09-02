@@ -4,6 +4,7 @@
     $(function () {
         var table = initServerDataTable('#municipalities_table', BASE_URL + 'municipalities/datatable', [
             { data: 'name' },
+            { data: 'prefix' },
             { data: 'province_name' },
             { data: 'region_name' },
             { data: 'actions', orderable: false, searchable: false, className: 'text-end' }

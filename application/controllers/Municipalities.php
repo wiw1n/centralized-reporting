@@ -32,7 +32,7 @@ class Municipalities extends MY_Controller
 
         $result = $this->datatable->response(
             function ($db) use ($province_id, $region_id, $restricted_id) {
-                $db->select('address_municipality.id, address_municipality.name, address_municipality.code, address_province.name AS province_name, address_region.name AS region_name')
+                $db->select('address_municipality.id, address_municipality.name, address_municipality.code, address_municipality.prefix, address_province.name AS province_name, address_region.name AS region_name')
                     ->from('address_municipality')
                     ->join('address_province', 'address_province.id = address_municipality.province_id')
                     ->join('address_region', 'address_region.id = address_province.region_id')
@@ -45,8 +45,8 @@ class Municipalities extends MY_Controller
                     $db->where('address_province.region_id', $region_id);
                 }
             },
-            ['address_municipality.name', 'address_municipality.code'],
-            ['address_municipality.name', 'address_province.name', 'address_region.name', null],
+            ['address_municipality.name', 'address_municipality.code', 'address_municipality.prefix'],
+            ['address_municipality.name', 'address_municipality.prefix', 'address_province.name', 'address_region.name', null],
             function ($row) use ($restricted_id) {
                 $actions = '<a href="' . base_url('municipalities/edit/' . $row->id) . '" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i></a> ';
                 if ($restricted_id === null) {
@@ -54,6 +54,7 @@ class Municipalities extends MY_Controller
                 }
                 return [
                     'name' => html_escape($row->name),
+                    'prefix' => html_escape($row->prefix ?? ''),
                     'province_name' => html_escape($row->province_name),
                     'region_name' => html_escape($row->region_name),
                     'actions' => $actions,
@@ -80,6 +81,7 @@ class Municipalities extends MY_Controller
         $this->form_validation->set_rules('province_id', 'Province', 'required|trim|numeric');
         $this->form_validation->set_rules('name', 'Municipality/City Name', 'required|trim|max_length[100]');
         $this->form_validation->set_rules('code', 'Code', 'trim|max_length[45]');
+        $this->form_validation->set_rules('prefix', 'Prefix', 'trim|max_length[10]');
         $this->form_validation->set_rules('description', 'Description', 'trim');
 
         if ($this->form_validation->run() === true) {
@@ -90,6 +92,7 @@ class Municipalities extends MY_Controller
                     'province_id' => $this->input->post('province_id'),
                     'name' => $this->input->post('name'),
                     'code' => $this->input->post('code'),
+                    'prefix' => strtoupper(trim((string) $this->input->post('prefix'))) ?: null,
                     'description' => $this->input->post('description'),
                 ]);
                 $this->session->set_flashdata('success', 'Municipality created successfully.');
@@ -129,6 +132,7 @@ class Municipalities extends MY_Controller
         $this->form_validation->set_rules('province_id', 'Province', 'required|trim|numeric');
         $this->form_validation->set_rules('name', 'Municipality/City Name', 'required|trim|max_length[100]');
         $this->form_validation->set_rules('code', 'Code', 'trim|max_length[45]');
+        $this->form_validation->set_rules('prefix', 'Prefix', 'trim|max_length[10]');
         $this->form_validation->set_rules('description', 'Description', 'trim');
 
         if ($this->form_validation->run() === true) {
@@ -139,6 +143,7 @@ class Municipalities extends MY_Controller
                     'province_id' => $this->input->post('province_id'),
                     'name' => $this->input->post('name'),
                     'code' => $this->input->post('code'),
+                    'prefix' => strtoupper(trim((string) $this->input->post('prefix'))) ?: null,
                     'description' => $this->input->post('description'),
                 ]);
                 $this->session->set_flashdata('success', 'Municipality updated successfully.');

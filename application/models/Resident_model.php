@@ -5,9 +5,9 @@ class Resident_model extends CI_Model
 {
     protected $table = 'residents';
 
-    const CIVIL_STATUS_OPTIONS = ['Single', 'Married', 'Widowed', 'Separated', 'Divorced', 'Live-in'];
-    const EDUCATION_OPTIONS = ['None', 'Elementary Undergraduate', 'Elementary Graduate', 'High School Undergraduate', 'High School Graduate', 'Vocational', 'College Undergraduate', 'College Graduate', 'Post Graduate'];
-    const BLOOD_TYPE_OPTIONS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'];
+    // Section option lists moved to their per-section models:
+    //   CIVIL_STATUS_OPTIONS, BLOOD_TYPE_OPTIONS -> Resident_personal_model
+    //   EDUCATION_OPTIONS                        -> Resident_work_education_model
 
     public function get_by_id($id)
     {
@@ -26,9 +26,12 @@ class Resident_model extends CI_Model
      */
     public function search($term, $barangay_id = null, $municipality_id = null, $limit = 10)
     {
-        $this->db->select('id, resident_no, last_name, first_name, middle_name, suffix, sex, birthdate, civil_status, religion, occupation, educational_attainment, contact_number')
+        $this->db->select('residents.id, residents.resident_no, residents.last_name, residents.first_name, residents.middle_name, residents.suffix, residents.sex, residents.birthdate, resident_personal.civil_status, resident_personal.religion, resident_work_education.occupation, resident_work_education.educational_attainment, resident_contact.contact_number')
             ->from($this->table)
-            ->where('archive', 0)
+            ->join('resident_personal', 'resident_personal.resident_id = residents.id', 'left')
+            ->join('resident_work_education', 'resident_work_education.resident_id = residents.id', 'left')
+            ->join('resident_contact', 'resident_contact.resident_id = residents.id', 'left')
+            ->where('residents.archive', 0)
             ->group_start()
                 ->like('last_name', $term)
                 ->or_like('first_name', $term)
@@ -45,15 +48,37 @@ class Resident_model extends CI_Model
         return $this->db->order_by('last_name', 'ASC')->order_by('first_name', 'ASC')->limit($limit)->get()->result();
     }
 
-    /** Next sequential resident_no for a barangay, formatted RES-{barangay_code}-{0001}. */
+    /**
+     * Next sequential Resident ID Number for a barangay, formatted
+     * {municipality prefix}-{barangay prefix}-{0001} (e.g. PAL-SJO-0001).
+     * Each prefix falls back to the area's `code`, then to an Mxx/Bxx placeholder.
+     */
     public function generate_resident_no($barangay_id)
     {
-        $barangay = $this->db->where('id', $barangay_id)->get('address_barangay')->row();
-        $prefix = ($barangay && $barangay->code !== null && $barangay->code !== '') ? $barangay->code : ('B' . $barangay_id);
+        $barangay = $this->db
+            ->select('address_barangay.code, address_barangay.prefix, address_barangay.municipality_id,
+                      address_municipality.code AS municipality_code, address_municipality.prefix AS municipality_prefix')
+            ->from('address_barangay')
+            ->join('address_municipality', 'address_municipality.id = address_barangay.municipality_id', 'left')
+            ->where('address_barangay.id', $barangay_id)
+            ->get()->row();
+
+        $muni_prefix = $this->id_prefix(
+            $barangay->municipality_prefix ?? null,
+            $barangay->municipality_code ?? null,
+            'M' . ($barangay->municipality_id ?? 0)
+        );
+        $brgy_prefix = $this->id_prefix(
+            $barangay->prefix ?? null,
+            $barangay->code ?? null,
+            'B' . $barangay_id
+        );
+
+        $stem = $muni_prefix . '-' . $brgy_prefix . '-';
 
         $last = $this->db->select('resident_no')
             ->where('barangay_id', $barangay_id)
-            ->like('resident_no', 'RES-' . $prefix . '-', 'after')
+            ->like('resident_no', $stem, 'after')
             ->order_by('id', 'DESC')
             ->limit(1)
             ->get($this->table)->row();
@@ -64,12 +89,23 @@ class Resident_model extends CI_Model
             $sequence = (int) end($parts) + 1;
         }
 
-        return sprintf('RES-%s-%04d', $prefix, $sequence);
+        return sprintf('%s%04d', $stem, $sequence);
+    }
+
+    /** First non-empty of prefix / code / placeholder, upper-cased and reduced to A-Z0-9. */
+    private function id_prefix($prefix, $code, $placeholder)
+    {
+        foreach ([$prefix, $code] as $candidate) {
+            $candidate = preg_replace('/[^A-Z0-9]/', '', strtoupper(trim((string) $candidate)));
+            if ($candidate !== '') {
+                return $candidate;
+            }
+        }
+        return $placeholder;
     }
 
     public function create(array $data)
     {
-        $data['is_senior_citizen'] = $this->is_senior($data['birthdate']) ? 1 : 0;
         $data['created_at'] = date('Y-m-d H:i:s');
         $this->db->insert($this->table, $data);
         return $this->db->insert_id();
@@ -77,7 +113,6 @@ class Resident_model extends CI_Model
 
     public function update($id, array $data)
     {
-        $data['is_senior_citizen'] = $this->is_senior($data['birthdate']) ? 1 : 0;
         $data['updated_at'] = date('Y-m-d H:i:s');
         return $this->db->where('id', $id)->update($this->table, $data);
     }
@@ -87,7 +122,8 @@ class Resident_model extends CI_Model
         return $this->db->where('id', $id)->update($this->table, ['archive' => 1, 'updated_at' => date('Y-m-d H:i:s')]);
     }
 
-    private function is_senior($birthdate)
+    /** Computed Senior Citizen flag; stored on resident_program_flags, set on save. */
+    public static function is_senior($birthdate)
     {
         return !empty($birthdate) && (new DateTime($birthdate))->diff(new DateTime())->y >= 60;
     }
@@ -115,9 +151,10 @@ class Resident_model extends CI_Model
     private function summarize($resident_where)
     {
         $totals = $this->db
-            ->select('COUNT(*) AS population, SUM(is_pwd) AS pwd_count, SUM(is_senior_citizen) AS senior_count, SUM(is_solo_parent) AS solo_parent_count, SUM(is_4ps_beneficiary) AS fourps_count')
+            ->select('COUNT(*) AS population, SUM(rpf.is_pwd) AS pwd_count, SUM(rpf.is_senior_citizen) AS senior_count, SUM(rpf.is_solo_parent) AS solo_parent_count, COUNT(rpf.is_4ps_beneficiary) AS fourps_count', false)
             ->from($this->table)
-            ->where('archive', 0)
+            ->join('resident_program_flags rpf', 'rpf.resident_id = residents.id', 'left')
+            ->where('residents.archive', 0)
             ->where($resident_where)
             ->get()->row();
 

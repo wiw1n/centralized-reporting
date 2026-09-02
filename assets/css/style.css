@@ -334,6 +334,22 @@ body {
     scroll-margin-top: 90px;
 }
 
+/* Make the sub-section dividers inside a form card clearly visible */
+.form-section .card-body > .border-top {
+    border-top: 2px solid var(--brand-light) !important;
+    margin-top: 1.25rem !important;
+    padding-top: 1rem !important;
+}
+
+/* Sub-section heading label gets a brand accent so groups read as separate blocks */
+.form-section .card-body > .border-top > .text-uppercase.fw-semibold {
+    color: var(--brand-dark) !important;
+    letter-spacing: 0.03em;
+    border-left: 3px solid var(--brand);
+    padding-left: 0.5rem;
+    margin-bottom: 0.75rem !important;
+}
+
 @media (max-width: 991.98px) {
     .form-section-nav-card {
         position: static;

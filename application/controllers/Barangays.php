@@ -34,7 +34,7 @@ class Barangays extends MY_Controller
 
         $result = $this->datatable->response(
             function ($db) use ($municipality_id, $province_id, $region_id, $restricted_id) {
-                $db->select('address_barangay.id, address_barangay.name, address_barangay.poblacion, address_municipality.name AS municipality_name, address_province.name AS province_name, address_region.name AS region_name')
+                $db->select('address_barangay.id, address_barangay.name, address_barangay.prefix, address_barangay.poblacion, address_municipality.name AS municipality_name, address_province.name AS province_name, address_region.name AS region_name')
                     ->from('address_barangay')
                     ->join('address_municipality', 'address_municipality.id = address_barangay.municipality_id')
                     ->join('address_province', 'address_province.id = address_municipality.province_id')
@@ -50,11 +50,12 @@ class Barangays extends MY_Controller
                     $db->where('address_province.region_id', $region_id);
                 }
             },
-            ['address_barangay.name'],
-            ['address_barangay.name', 'address_municipality.name', 'address_province.name', null, null],
+            ['address_barangay.name', 'address_barangay.prefix'],
+            ['address_barangay.name', 'address_barangay.prefix', 'address_municipality.name', 'address_province.name', null, null],
             function ($row) {
                 return [
                     'name' => html_escape($row->name),
+                    'prefix' => html_escape($row->prefix ?? ''),
                     'municipality_name' => html_escape($row->municipality_name),
                     'province_name' => html_escape($row->province_name),
                     'poblacion' => $row->poblacion ? '<span class="badge bg-info">Yes</span>' : '',
@@ -90,6 +91,7 @@ class Barangays extends MY_Controller
 
         $this->form_validation->set_rules('name', 'Barangay Name', 'required|trim|max_length[100]');
         $this->form_validation->set_rules('code', 'Code', 'trim|max_length[45]');
+        $this->form_validation->set_rules('prefix', 'Prefix', 'trim|max_length[10]');
         $this->form_validation->set_rules('description', 'Description', 'trim');
         $this->form_validation->set_rules('total_puroks', 'Total Number of Puroks', 'trim|numeric');
         $this->form_validation->set_rules('day_care_centers_public', 'Day Care Centers (Public)', 'trim|numeric');
@@ -111,6 +113,7 @@ class Barangays extends MY_Controller
                     'municipality_id' => $municipality_id,
                     'name' => $this->input->post('name'),
                     'code' => $this->input->post('code'),
+                    'prefix' => strtoupper(trim((string) $this->input->post('prefix'))) ?: null,
                     'description' => $this->input->post('description'),
                     'poblacion' => $this->input->post('poblacion') ? 1 : 0,
                     'total_puroks' => (int) $this->input->post('total_puroks'),
@@ -173,6 +176,7 @@ class Barangays extends MY_Controller
 
         $this->form_validation->set_rules('name', 'Barangay Name', 'required|trim|max_length[100]');
         $this->form_validation->set_rules('code', 'Code', 'trim|max_length[45]');
+        $this->form_validation->set_rules('prefix', 'Prefix', 'trim|max_length[10]');
         $this->form_validation->set_rules('description', 'Description', 'trim');
         $this->form_validation->set_rules('total_puroks', 'Total Number of Puroks', 'trim|numeric');
         $this->form_validation->set_rules('day_care_centers_public', 'Day Care Centers (Public)', 'trim|numeric');
@@ -194,6 +198,7 @@ class Barangays extends MY_Controller
                     'municipality_id' => $municipality_id,
                     'name' => $this->input->post('name'),
                     'code' => $this->input->post('code'),
+                    'prefix' => strtoupper(trim((string) $this->input->post('prefix'))) ?: null,
                     'description' => $this->input->post('description'),
                     'poblacion' => $this->input->post('poblacion') ? 1 : 0,
                     'total_puroks' => (int) $this->input->post('total_puroks'),

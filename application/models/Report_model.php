@@ -120,6 +120,15 @@ class Report_model extends CI_Model
             ->join('address_municipality', 'address_municipality.id = address_barangay.municipality_id')
             ->join('address_province', 'address_province.id = address_municipality.province_id')
             ->join('address_region', 'address_region.id = address_province.region_id')
+            // Per-section 1:1 child tables (see application/config/report_fields.php).
+            // Always left-joined: 1:1 on resident_id, negligible cost, and it keeps
+            // the field registry free of per-field join bookkeeping.
+            ->join('resident_personal', 'resident_personal.resident_id = residents.id', 'left')
+            ->join('resident_contact', 'resident_contact.resident_id = residents.id', 'left')
+            ->join('resident_work_education', 'resident_work_education.resident_id = residents.id', 'left')
+            ->join('resident_government_ids', 'resident_government_ids.resident_id = residents.id', 'left')
+            ->join('resident_program_flags', 'resident_program_flags.resident_id = residents.id', 'left')
+            ->join('resident_remarks', 'resident_remarks.resident_id = residents.id', 'left')
             ->where('residents.archive', 0);
 
         $this->apply_scope($scope);
@@ -168,7 +177,13 @@ class Report_model extends CI_Model
             switch ($field['type']) {
                 case 'boolean':
                     if (!empty($value)) {
-                        $this->db->where($column, 1);
+                        if ($column === 'resident_program_flags.is_4ps_beneficiary') {
+                            // Stored as a nullable varchar (the 4Ps ID Number);
+                            // any non-NULL value marks the resident a beneficiary.
+                            $this->db->where("$column IS NOT NULL", null, false);
+                        } else {
+                            $this->db->where($column, 1);
+                        }
                     }
                     break;
 

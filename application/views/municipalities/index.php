@@ -32,6 +32,7 @@
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Prefix</th>
                         <th>Province</th>
                         <th>Region</th>
                         <th class="text-end">Actions</th>

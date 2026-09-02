@@ -67,6 +67,11 @@
                 <input type="text" name="code" class="form-control" maxlength="45"
                        value="<?= set_value('code', $barangay->code ?? '') ?>">
             </div>
+            <div class="mb-3">
+                <label class="form-label">Prefix <small class="text-muted">(used in the Resident ID Number, e.g. SJO)</small></label>
+                <input type="text" name="prefix" class="form-control" maxlength="10" style="text-transform:uppercase"
+                       value="<?= set_value('prefix', $barangay->prefix ?? '') ?>">
+            </div>
             <div class="mb-3 form-check">
                 <input type="checkbox" name="poblacion" id="poblacion" class="form-check-input" value="1"
                     <?= set_value('poblacion', $barangay->poblacion ?? 0) ? 'checked' : '' ?>>

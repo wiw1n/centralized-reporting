@@ -54,7 +54,9 @@
                     result.columns.forEach(function (col) {
                         var value = row[col.key];
                         if (col.type === 'boolean') {
-                            value = (parseInt(value, 10) === 1) ? 'Yes' : 'No';
+                            // Truthy for tinyint flags ("1") and for varchar flags
+                            // such as is_4ps_beneficiary that store an ID string.
+                            value = (value === null || value === undefined || value === '' || value === '0' || value === 0) ? 'No' : 'Yes';
                         } else if (value === null || value === undefined) {
                             value = '';
                         }
