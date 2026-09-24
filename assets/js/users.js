@@ -43,6 +43,8 @@
     // User form (form.php): area assignment builder (Encoder role scoping).
     var $builder = $('#area_assignment_builder');
     if ($builder.length) {
+        var $panel = $('#area_assignment_panel');
+        var $form = $builder.closest('form');
         var $scopeSelect = $('#scope_type');
         var $regionSelect = $('#area_region_id');
         var $provinceSelect = $('#area_province_id');
@@ -132,6 +134,16 @@
         $scopeSelect.on('change', refreshVisibility);
         refreshVisibility();
         renderList();
+
+        // Selecting an area only stages it locally; it isn't saved until
+        // "Add Area" turns it into a hidden input. Block a submit that
+        // would silently save an Encoder with zero assigned areas.
+        $form.on('submit', function (e) {
+            if ($panel.is(':visible') && assignments.length === 0) {
+                e.preventDefault();
+                alert('Please add at least one assigned area for this Encoder (select an area above, then click "Add Area") before saving.');
+            }
+        });
 
         // Preload existing assignments (edit mode), injected as a JSON script tag.
         var $seedEl = $('#assigned_areas_seed');

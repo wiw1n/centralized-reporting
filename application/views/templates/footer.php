@@ -40,6 +40,10 @@
         });
     })();
 </script>
+<?php if ((isset($active_menu) && in_array($active_menu, ['municipalities', 'barangays', 'residents'], true))
+    || (strtolower($this->router->fetch_class()) === 'health' && strtolower($this->router->fetch_method()) === 'household_report')): ?>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<?php endif; ?>
 <?php
 $controller_js = strtolower($this->router->fetch_class()) . '.js';
 if (is_file(FCPATH . 'assets/js/' . $controller_js)):

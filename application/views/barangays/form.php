@@ -18,6 +18,8 @@
             <div class="mb-3">
                 <label class="form-label">Municipality / City</label>
                 <input type="text" class="form-control" value="<?= html_escape($locked_municipality->name) ?>" disabled>
+                <input type="hidden" id="locked_municipality_lat" value="<?= html_escape($locked_municipality->latitude ?? '') ?>">
+                <input type="hidden" id="locked_municipality_lon" value="<?= html_escape($locked_municipality->longitude ?? '') ?>">
             </div>
             <?php else: ?>
             <div class="mb-3">
@@ -50,6 +52,8 @@
                     <option value="">-- Select Municipality --</option>
                     <?php foreach ($municipalities as $municipality): ?>
                         <option value="<?= $municipality->id ?>"
+                            data-lat="<?= html_escape($municipality->latitude ?? '') ?>"
+                            data-lon="<?= html_escape($municipality->longitude ?? '') ?>"
                             <?= set_value('municipality_id', $barangay->municipality_id ?? '') == $municipality->id ? 'selected' : '' ?>>
                             <?= html_escape($municipality->name) ?>
                         </option>
@@ -80,6 +84,23 @@
             <div class="mb-3">
                 <label class="form-label">Description</label>
                 <textarea name="description" class="form-control" rows="3"><?= set_value('description', $barangay->description ?? '') ?></textarea>
+            </div>
+
+            <hr>
+            <h5><i class="bi bi-geo-alt-fill"></i> Map Coordinates</h5>
+            <p class="text-muted">Click on the map (or drag the marker) to set the barangay's location. The map centers on the selected municipality.</p>
+            <div id="barangay_map" style="height: 350px;" class="rounded border mb-3"></div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Latitude</label>
+                    <input type="text" name="latitude" id="latitude" class="form-control" autocomplete="off"
+                           value="<?= set_value('latitude', $barangay->latitude ?? '') ?>">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Longitude</label>
+                    <input type="text" name="longitude" id="longitude" class="form-control" autocomplete="off"
+                           value="<?= set_value('longitude', $barangay->longitude ?? '') ?>">
+                </div>
             </div>
 
             <hr>

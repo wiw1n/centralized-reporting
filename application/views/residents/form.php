@@ -14,6 +14,11 @@ $wra_fp_status_of_application_options = Resident_household_model::WRA_FP_STATUS_
 $child_immunization_status_options = Resident_household_model::CHILD_IMMUNIZATION_STATUS_OPTIONS;
 $child_infant_feeding_options = Resident_household_model::CHILD_INFANT_FEEDING_OPTIONS;
 $child_complementary_feeding_options = Resident_household_model::CHILD_COMPLEMENTARY_FEEDING_OPTIONS;
+$env_toilet_type_options = Resident_household_model::ENV_TOILET_TYPE_OPTIONS;
+$env_water_source_options = Resident_household_model::ENV_WATER_SOURCE_OPTIONS;
+$env_owner_sharer_options = Resident_household_model::ENV_OWNER_SHARER_OPTIONS;
+$env_house_type_options = Resident_household_model::ENV_HOUSE_TYPE_OPTIONS;
+$env_lot_occupancy_options = Resident_household_model::ENV_LOT_OCCUPANCY_OPTIONS;
 $immunization_status_options = Resident_data_survey_model::IMMUNIZATION_STATUS_OPTIONS;
 $covid_vaccine_status_options = Resident_data_survey_model::COVID_VACCINE_STATUS_OPTIONS;
 $r = $resident;
@@ -79,6 +84,8 @@ $ds = $resident_data_survey ?? null;
                     <div class="mb-3">
                         <label class="form-label">Barangay</label>
                         <input type="text" class="form-control" value="<?= html_escape($locked_barangay->name) ?>" disabled>
+                        <input type="hidden" id="locked_barangay_lat" value="<?= html_escape($locked_barangay->latitude ?? '') ?>">
+                        <input type="hidden" id="locked_barangay_lon" value="<?= html_escape($locked_barangay->longitude ?? '') ?>">
                     </div>
                     <?php elseif ($locked_municipality): ?>
                     <div class="row">
@@ -92,6 +99,8 @@ $ds = $resident_data_survey ?? null;
                                 <option value="">-- Select Barangay --</option>
                                 <?php foreach ($barangays as $barangay): ?>
                                     <option value="<?= $barangay->id ?>"
+                                        data-lat="<?= html_escape($barangay->latitude ?? '') ?>"
+                                        data-lon="<?= html_escape($barangay->longitude ?? '') ?>"
                                         <?= set_value('barangay_id', $r->barangay_id ?? '') == $barangay->id ? 'selected' : '' ?>>
                                         <?= html_escape($barangay->name) ?>
                                     </option>
@@ -143,6 +152,8 @@ $ds = $resident_data_survey ?? null;
                                 <option value="">-- Select Barangay --</option>
                                 <?php foreach ($barangays as $barangay): ?>
                                     <option value="<?= $barangay->id ?>"
+                                        data-lat="<?= html_escape($barangay->latitude ?? '') ?>"
+                                        data-lon="<?= html_escape($barangay->longitude ?? '') ?>"
                                         <?= set_value('barangay_id', $r->barangay_id ?? '') == $barangay->id ? 'selected' : '' ?>>
                                         <?= html_escape($barangay->name) ?>
                                     </option>
@@ -396,6 +407,24 @@ $ds = $resident_data_survey ?? null;
                         <div class="col-auto form-check mt-4 mb-3">
                             <input type="checkbox" name="is_surveyed" value="1" class="form-check-input" id="is_surveyed" <?= set_value('is_surveyed', $hh->is_surveyed ?? 0) ? 'checked' : '' ?>>
                             <label class="form-check-label" for="is_surveyed">Covered by the Family Profile Survey</label>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-2 mt-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">House Location</div>
+                        <p class="text-muted small">Click on the map (or drag the marker) to pin the house. Residents sharing the same Household No. in this barangay are kept in sync with the same location.</p>
+                        <div id="household_map" style="height: 350px;" class="rounded border mb-3"></div>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Latitude</label>
+                                <input type="text" name="latitude" id="latitude" class="form-control" autocomplete="off"
+                                       value="<?= set_value('latitude', $hh->latitude ?? '') ?>">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Longitude</label>
+                                <input type="text" name="longitude" id="longitude" class="form-control" autocomplete="off"
+                                       value="<?= set_value('longitude', $hh->longitude ?? '') ?>">
+                            </div>
                         </div>
                     </div>
 
@@ -679,6 +708,163 @@ $ds = $resident_data_survey ?? null;
                                         <option value="<?= html_escape($opt) ?>" <?= set_value('senior_nutritional_status', $hh->senior_nutritional_status ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
                                     <?php endforeach; ?>
                                 </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-2 mt-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-1">Household Environment</div>
+                        <div class="row align-items-end">
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Type of Toilet Facility <span class="text-muted">(WS, OP, O, N)</span></label>
+                                <select name="env_toilet_type" id="env_toilet_type" class="form-select form-select-sm">
+                                    <option value="">-- Select --</option>
+                                    <?php foreach ($env_toilet_type_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('env_toilet_type', $hh->env_toilet_type ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2" id="env_toilet_other_row">
+                                <label class="form-label small mb-1">Others, please specify</label>
+                                <input type="text" name="env_toilet_other" class="form-control form-control-sm" maxlength="100" value="<?= set_value('env_toilet_other', $hh->env_toilet_other ?? '') ?>">
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Type of Water Source <span class="text-muted">(P, W, S)</span></label>
+                                <select name="env_water_source" class="form-select form-select-sm">
+                                    <option value="">-- Select --</option>
+                                    <?php foreach ($env_water_source_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('env_water_source', $hh->env_water_source ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Electricity</label>
+                                <select name="env_electricity" class="form-select form-select-sm">
+                                    <option value="">-- Select --</option>
+                                    <?php foreach ($env_owner_sharer_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('env_electricity', $hh->env_electricity ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row align-items-end">
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">House</label>
+                                <select name="env_house_ownership" class="form-select form-select-sm">
+                                    <option value="">-- Select --</option>
+                                    <?php foreach ($env_owner_sharer_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('env_house_ownership', $hh->env_house_ownership ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Type of House</label>
+                                <select name="env_house_type" class="form-select form-select-sm">
+                                    <option value="">-- Select --</option>
+                                    <?php foreach ($env_house_type_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('env_house_type', $hh->env_house_type ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Lot Occupancy</label>
+                                <select name="env_lot_occupancy" class="form-select form-select-sm">
+                                    <option value="">-- Select --</option>
+                                    <?php foreach ($env_lot_occupancy_options as $opt): ?>
+                                        <option value="<?= html_escape($opt) ?>" <?= set_value('env_lot_occupancy', $hh->env_lot_occupancy ?? '') === $opt ? 'selected' : '' ?>><?= html_escape($opt) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row align-items-end">
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label small mb-1">Vehicle</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_vehicle_tricycle" value="1" class="form-check-input" id="env_vehicle_tricycle" <?= set_value('env_vehicle_tricycle', $hh->env_vehicle_tricycle ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_vehicle_tricycle">Tricycle</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_vehicle_four_wheels" value="1" class="form-check-input" id="env_vehicle_four_wheels" <?= set_value('env_vehicle_four_wheels', $hh->env_vehicle_four_wheels ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_vehicle_four_wheels">Four wheels</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_vehicle_motorcycle" value="1" class="form-check-input" id="env_vehicle_motorcycle" <?= set_value('env_vehicle_motorcycle', $hh->env_vehicle_motorcycle ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_vehicle_motorcycle">Motorcycle</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Vehicle: Others, please specify</label>
+                                <input type="text" name="env_vehicle_other" class="form-control form-control-sm" maxlength="100" value="<?= set_value('env_vehicle_other', $hh->env_vehicle_other ?? '') ?>">
+                            </div>
+                        </div>
+                        <div class="row align-items-end">
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label small mb-1">Food Production Activity</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_food_vegetable_garden" value="1" class="form-check-input" id="env_food_vegetable_garden" <?= set_value('env_food_vegetable_garden', $hh->env_food_vegetable_garden ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_food_vegetable_garden">Vegetable Garden (VG)</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_food_poultry_livestock" value="1" class="form-check-input" id="env_food_poultry_livestock" <?= set_value('env_food_poultry_livestock', $hh->env_food_poultry_livestock ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_food_poultry_livestock">Poultry/Livestock (P/L)</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_food_fishpond" value="1" class="form-check-input" id="env_food_fishpond" <?= set_value('env_food_fishpond', $hh->env_food_fishpond ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_food_fishpond">Fishpond (FP)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label small mb-1">Pets: Dogs <span class="text-muted">(#)</span></label>
+                                <input type="number" name="env_pets_dogs" class="form-control form-control-sm" min="0" max="999" value="<?= set_value('env_pets_dogs', $hh->env_pets_dogs ?? '') ?>">
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label small mb-1">Pets: Cats <span class="text-muted">(#)</span></label>
+                                <input type="number" name="env_pets_cats" class="form-control form-control-sm" min="0" max="999" value="<?= set_value('env_pets_cats', $hh->env_pets_cats ?? '') ?>">
+                            </div>
+                        </div>
+                        <div class="row align-items-end">
+                            <div class="col-12 mb-2">
+                                <label class="form-label small mb-1">Iodized Salt / Fortified Foods</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_uses_iodized_salt" value="1" class="form-check-input" id="env_uses_iodized_salt" <?= set_value('env_uses_iodized_salt', $hh->env_uses_iodized_salt ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_uses_iodized_salt">HH using iodized salt</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_sells_iodized_salt" value="1" class="form-check-input" id="env_sells_iodized_salt" <?= set_value('env_sells_iodized_salt', $hh->env_sells_iodized_salt ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_sells_iodized_salt">Selling iodized salt</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_uses_ifr" value="1" class="form-check-input" id="env_uses_ifr" <?= set_value('env_uses_ifr', $hh->env_uses_ifr ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_uses_ifr">HH using IFR</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_sffp" value="1" class="form-check-input" id="env_sffp" <?= set_value('env_sffp', $hh->env_sffp ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_sffp">SFFP &mdash; Selling fortified food/products</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_uvf" value="1" class="form-check-input" id="env_uvf" <?= set_value('env_uvf', $hh->env_uvf ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_uvf">UVF &mdash; Using Vitamin A fortified flour</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_uvo" value="1" class="form-check-input" id="env_uvo" <?= set_value('env_uvo', $hh->env_uvo ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_uvo">UVO &mdash; Using Vitamin A fortified oil</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row align-items-end">
+                            <div class="col-md-3 mb-2">
+                                <label class="form-label small mb-1">Date Accomplished</label>
+                                <input type="date" name="env_date_accomplished" class="form-control form-control-sm" value="<?= set_value('env_date_accomplished', $hh->env_date_accomplished ?? '') ?>">
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label class="form-label small mb-1">Remarks</label>
+                                <input type="text" name="env_remarks" class="form-control form-control-sm" maxlength="255" value="<?= set_value('env_remarks', $hh->env_remarks ?? '') ?>">
                             </div>
                         </div>
                     </div>

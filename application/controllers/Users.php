@@ -79,10 +79,15 @@ class Users extends MY_Controller
         $this->form_validation->set_rules('role_id', 'Role', 'required|trim|numeric');
 
         if ($this->form_validation->run() === true) {
+            $role = $this->role_model->find($this->input->post('role_id'));
+            $assignments = $this->parse_assignments();
+
             if ($this->user_model->username_exists($this->input->post('username'))) {
                 $this->session->set_flashdata('error', 'That username is already taken.');
             } elseif ($this->user_model->email_exists($this->input->post('email'))) {
                 $this->session->set_flashdata('error', 'That email is already registered.');
+            } elseif ($role && $role->name === 'encoder' && empty($assignments)) {
+                $this->session->set_flashdata('error', 'Please assign at least one area to this Encoder.');
             } else {
                 $user_id = $this->user_model->create([
                     'username' => $this->input->post('username'),
@@ -95,9 +100,8 @@ class Users extends MY_Controller
                     'created_by' => $this->current_user->id,
                 ]);
 
-                $role = $this->role_model->find($this->input->post('role_id'));
                 if ($role && $role->name === 'encoder') {
-                    $this->user_area_model->replace_for_user($user_id, $this->parse_assignments());
+                    $this->user_area_model->replace_for_user($user_id, $assignments);
                 }
 
                 $this->session->set_flashdata('success', 'User created successfully.');
@@ -135,10 +139,15 @@ class Users extends MY_Controller
         }
 
         if ($this->form_validation->run() === true) {
+            $role = $this->role_model->find($this->input->post('role_id'));
+            $assignments = $this->parse_assignments();
+
             if ($this->user_model->username_exists($this->input->post('username'), $id)) {
                 $this->session->set_flashdata('error', 'That username is already taken.');
             } elseif ($this->user_model->email_exists($this->input->post('email'), $id)) {
                 $this->session->set_flashdata('error', 'That email is already registered.');
+            } elseif ($role && $role->name === 'encoder' && empty($assignments)) {
+                $this->session->set_flashdata('error', 'Please assign at least one area to this Encoder.');
             } else {
                 $update = [
                     'username' => $this->input->post('username'),
@@ -158,9 +167,8 @@ class Users extends MY_Controller
 
                 $this->user_model->update($id, $update);
 
-                $role = $this->role_model->find($this->input->post('role_id'));
                 if ($role && $role->name === 'encoder') {
-                    $this->user_area_model->replace_for_user($id, $this->parse_assignments());
+                    $this->user_area_model->replace_for_user($id, $assignments);
                 } else {
                     $this->user_area_model->delete_by_user($id);
                 }

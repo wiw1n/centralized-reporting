@@ -83,6 +83,53 @@
             togglePapsmearRow();
         }
 
+        var $toiletType = $('#env_toilet_type');
+        var $toiletOtherRow = $('#env_toilet_other_row');
+        if ($toiletType.length && $toiletOtherRow.length) {
+            function toggleToiletOtherRow() {
+                $toiletOtherRow.toggle($toiletType.val() === 'Others');
+            }
+            $toiletType.on('change', toggleToiletOtherRow);
+            toggleToiletOtherRow();
+        }
+
+        var householdPicker = null;
+        if ($('#household_map').length) {
+            householdPicker = window.initLocationPicker({
+                mapId: 'household_map',
+                latInputId: 'latitude',
+                lonInputId: 'longitude'
+            });
+
+            function recenterOnBarangay(lat, lon) {
+                if (!householdPicker || isNaN(lat) || isNaN(lon)) {
+                    return;
+                }
+                householdPicker.recenter(lat, lon, 15);
+            }
+
+            // Encoders locked to one barangay: center on it once, but only if
+            // this household hasn't been pinned yet.
+            var $lockedLat = $('#locked_barangay_lat');
+            var hasOwnCoordinates = !!$('#latitude').val();
+            if ($lockedLat.length && !hasOwnCoordinates) {
+                recenterOnBarangay(parseFloat($lockedLat.val()), parseFloat($('#locked_barangay_lon').val()));
+            }
+
+            // Admins/super admins pick the barangay via cascading dropdowns
+            // (or it's pre-selected server-side, e.g. under a locked
+            // municipality, or when re-rendering after a validation error).
+            var $barangaySelect = $('#barangay_id');
+            if ($barangaySelect.length && !hasOwnCoordinates) {
+                var $preselected = $barangaySelect.find('option:selected');
+                recenterOnBarangay(parseFloat($preselected.attr('data-lat')), parseFloat($preselected.attr('data-lon')));
+            }
+            $barangaySelect.on('change', function () {
+                var $selected = $(this).find('option:selected');
+                recenterOnBarangay(parseFloat($selected.attr('data-lat')), parseFloat($selected.attr('data-lon')));
+            });
+        }
+
         var $newbornScreening = $('#child_newborn_screening');
         var $newbornScreeningRow = $('#child_newborn_screening_result_row');
         if ($newbornScreening.length && $newbornScreeningRow.length) {
@@ -109,6 +156,12 @@
                 $sections.addClass('d-none');
                 $target.removeClass('d-none');
                 $navLinks.removeClass('active').filter('[href="#' + id + '"]').addClass('active');
+
+                // The household map is inside a hidden section at init time,
+                // so Leaflet computes a 0x0 size; fix it up once it's shown.
+                if (id === 'section-household' && householdPicker) {
+                    householdPicker.invalidateSize();
+                }
             }
 
             $navLinks.on('click', function (e) {

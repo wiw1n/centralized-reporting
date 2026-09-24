@@ -9,6 +9,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.11/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <?php if ((isset($active_menu) && in_array($active_menu, ['municipalities', 'barangays', 'residents'], true))
+        || (strtolower($this->router->fetch_class()) === 'health' && strtolower($this->router->fetch_method()) === 'household_report')): ?>
+    <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
+    <?php endif; ?>
     <link href="<?= base_url('assets/css/style.css') ?>" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>

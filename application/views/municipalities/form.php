@@ -57,6 +57,24 @@
                 <label class="form-label">Description</label>
                 <textarea name="description" class="form-control" rows="3"><?= set_value('description', $municipality->description ?? '') ?></textarea>
             </div>
+
+            <hr>
+            <h5><i class="bi bi-geo-alt-fill"></i> Map Coordinates</h5>
+            <p class="text-muted">Click on the map (or drag the marker) to set the municipality's location. This centers the map when placing barangays under it.</p>
+            <div id="municipality_map" style="height: 350px;" class="rounded border mb-3"></div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Latitude</label>
+                    <input type="text" name="latitude" id="latitude" class="form-control" autocomplete="off"
+                           value="<?= set_value('latitude', $municipality->latitude ?? '') ?>">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Longitude</label>
+                    <input type="text" name="longitude" id="longitude" class="form-control" autocomplete="off"
+                           value="<?= set_value('longitude', $municipality->longitude ?? '') ?>">
+                </div>
+            </div>
+
             <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save</button>
         <?= form_close() ?>
     </div>

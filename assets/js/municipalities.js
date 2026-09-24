@@ -20,5 +20,13 @@
         $('#filter_region_id, #filter_province_id').on('change', function () {
             table.ajax.reload();
         });
+
+        if ($('#municipality_map').length) {
+            window.initLocationPicker({
+                mapId: 'municipality_map',
+                latInputId: 'latitude',
+                lonInputId: 'longitude'
+            });
+        }
     });
 })(jQuery);

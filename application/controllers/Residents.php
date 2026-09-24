@@ -3,7 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Residents extends MY_Controller
 {
-    /** null = unrestricted (super_admin/admin); int = locked to this barangay; 0 = encoder has no barangay assigned */
+    /** null = unrestricted, or (for an encoder assigned at municipality/province/region level) scoped via restricted_municipality_id; int = locked to this barangay; 0 = encoder has no area assigned */
     protected $restricted_barangay_id;
 
     public function __construct()
@@ -28,13 +28,23 @@ class Residents extends MY_Controller
         $this->restricted_barangay_id = null;
         if ($this->current_user->role_name === 'encoder') {
             $barangay_assignment = null;
+            $has_wider_assignment = false;
             foreach ($this->authentication->assigned_areas() as $area) {
                 if ($area->scope_type === 'barangay') {
                     $barangay_assignment = $area;
                     break;
                 }
+                if (in_array($area->scope_type, ['municipality', 'province', 'region'], true)) {
+                    $has_wider_assignment = true;
+                }
             }
-            $this->restricted_barangay_id = $barangay_assignment->barangay_id ?? 0;
+            if ($barangay_assignment) {
+                $this->restricted_barangay_id = $barangay_assignment->barangay_id;
+            } elseif (!$has_wider_assignment) {
+                $this->restricted_barangay_id = 0;
+            }
+            // Else: assigned at municipality/province/region level -- stays null so
+            // callers fall back to restricted_municipality_id (any barangay in it).
         }
         $this->data['restricted_barangay_id'] = $this->restricted_barangay_id;
     }
@@ -223,7 +233,7 @@ class Residents extends MY_Controller
             $this->resident_government_ids_model->save($resident_id, $this->collect_government_ids_fields());
             $this->resident_program_flags_model->save($resident_id, $this->collect_program_flags_fields());
             $this->resident_remarks_model->save($resident_id, $this->collect_remarks_fields());
-            $this->resident_household_model->save($resident_id, $this->collect_household_fields());
+            $this->resident_household_model->save($resident_id, $this->collect_household_fields(), $barangay_id);
             $this->resident_data_survey_model->save($resident_id, $this->collect_data_survey_fields());
             $this->session->set_flashdata('success', 'Resident created successfully.');
             redirect('residents');
@@ -318,7 +328,7 @@ class Residents extends MY_Controller
             $this->resident_government_ids_model->save($id, $this->collect_government_ids_fields());
             $this->resident_program_flags_model->save($id, $this->collect_program_flags_fields());
             $this->resident_remarks_model->save($id, $this->collect_remarks_fields());
-            $this->resident_household_model->save($id, $this->collect_household_fields());
+            $this->resident_household_model->save($id, $this->collect_household_fields(), $barangay_id);
             $this->resident_data_survey_model->save($id, $this->collect_data_survey_fields());
             $this->session->set_flashdata('success', 'Resident updated successfully.');
             redirect('residents');
@@ -395,6 +405,8 @@ class Residents extends MY_Controller
 
         $this->form_validation->set_rules('type_of_resident', 'Type of Resident', 'trim|in_list[' . implode(',', Resident_household_model::TYPE_OF_RESIDENT_OPTIONS) . ']');
         $this->form_validation->set_rules('household_no', 'Household No.', 'trim|max_length[30]');
+        $this->form_validation->set_rules('latitude', 'Household Latitude', 'trim|decimal');
+        $this->form_validation->set_rules('longitude', 'Household Longitude', 'trim|decimal');
         $this->form_validation->set_rules('relationship_to_head', 'Relationship to Head', 'trim');
         $this->form_validation->set_rules('ordinal_position', 'Ord. Position', 'trim|numeric');
         $this->form_validation->set_rules('other_illness', 'Other Illness', 'trim|max_length[150]');
@@ -422,6 +434,12 @@ class Residents extends MY_Controller
         $this->form_validation->set_rules('child_newborn_screening_result', 'Newborn Screening Result', 'trim|max_length[255]');
         $this->form_validation->set_rules('child_infant_feeding', 'Infant Feeding', 'trim');
         $this->form_validation->set_rules('child_complementary_feeding', 'Complementary Feeding', 'trim');
+        $this->form_validation->set_rules('env_toilet_other', 'Toilet Facility (Others)', 'trim|max_length[100]');
+        $this->form_validation->set_rules('env_vehicle_other', 'Vehicle (Others)', 'trim|max_length[100]');
+        $this->form_validation->set_rules('env_pets_dogs', 'No. of Dogs', 'trim|is_natural');
+        $this->form_validation->set_rules('env_pets_cats', 'No. of Cats', 'trim|is_natural');
+        $this->form_validation->set_rules('env_date_accomplished', 'Date Accomplished', 'trim');
+        $this->form_validation->set_rules('env_remarks', 'Household Environment Remarks', 'trim|max_length[255]');
 
         $this->form_validation->set_rules('immunization_status', 'Immun. Status', 'trim');
         $this->form_validation->set_rules('covid_vaccine_status', 'COVID-19 Immun. Status', 'trim');
@@ -546,10 +564,13 @@ class Residents extends MY_Controller
     {
         $text = fn ($field) => trim((string) $this->input->post($field)) !== '' ? trim((string) $this->input->post($field)) : null;
         $int = fn ($field) => trim((string) $this->input->post($field)) !== '' ? (int) $this->input->post($field) : null;
+        $in_list = fn ($field, array $options) => in_array($this->input->post($field), $options, true) ? $this->input->post($field) : null;
 
         return [
             'type_of_resident' => in_array($this->input->post('type_of_resident'), Resident_household_model::TYPE_OF_RESIDENT_OPTIONS, true) ? $this->input->post('type_of_resident') : null,
             'household_no' => $text('household_no'),
+            'latitude' => $text('latitude'),
+            'longitude' => $text('longitude'),
             'relationship_to_head' => $text('relationship_to_head'),
             'ordinal_position' => $int('ordinal_position'),
             'is_surveyed' => $this->input->post('is_surveyed') ? 1 : 0,
@@ -593,6 +614,30 @@ class Residents extends MY_Controller
             'child_mns_micronutrient_powder' => $this->input->post('child_mns_micronutrient_powder') ? 1 : 0,
             'child_mns_ferrous_sulfate' => $this->input->post('child_mns_ferrous_sulfate') ? 1 : 0,
             'child_mns_multivitamins' => $this->input->post('child_mns_multivitamins') ? 1 : 0,
+            'env_toilet_type' => $in_list('env_toilet_type', Resident_household_model::ENV_TOILET_TYPE_OPTIONS),
+            'env_toilet_other' => $this->input->post('env_toilet_type') === 'Others' ? $text('env_toilet_other') : null,
+            'env_water_source' => $in_list('env_water_source', Resident_household_model::ENV_WATER_SOURCE_OPTIONS),
+            'env_electricity' => $in_list('env_electricity', Resident_household_model::ENV_OWNER_SHARER_OPTIONS),
+            'env_vehicle_tricycle' => $this->input->post('env_vehicle_tricycle') ? 1 : 0,
+            'env_vehicle_four_wheels' => $this->input->post('env_vehicle_four_wheels') ? 1 : 0,
+            'env_vehicle_motorcycle' => $this->input->post('env_vehicle_motorcycle') ? 1 : 0,
+            'env_vehicle_other' => $text('env_vehicle_other'),
+            'env_house_ownership' => $in_list('env_house_ownership', Resident_household_model::ENV_OWNER_SHARER_OPTIONS),
+            'env_house_type' => $in_list('env_house_type', Resident_household_model::ENV_HOUSE_TYPE_OPTIONS),
+            'env_lot_occupancy' => $in_list('env_lot_occupancy', Resident_household_model::ENV_LOT_OCCUPANCY_OPTIONS),
+            'env_food_vegetable_garden' => $this->input->post('env_food_vegetable_garden') ? 1 : 0,
+            'env_food_poultry_livestock' => $this->input->post('env_food_poultry_livestock') ? 1 : 0,
+            'env_food_fishpond' => $this->input->post('env_food_fishpond') ? 1 : 0,
+            'env_pets_dogs' => $int('env_pets_dogs'),
+            'env_pets_cats' => $int('env_pets_cats'),
+            'env_uses_iodized_salt' => $this->input->post('env_uses_iodized_salt') ? 1 : 0,
+            'env_sells_iodized_salt' => $this->input->post('env_sells_iodized_salt') ? 1 : 0,
+            'env_uses_ifr' => $this->input->post('env_uses_ifr') ? 1 : 0,
+            'env_sffp' => $this->input->post('env_sffp') ? 1 : 0,
+            'env_uvf' => $this->input->post('env_uvf') ? 1 : 0,
+            'env_uvo' => $this->input->post('env_uvo') ? 1 : 0,
+            'env_date_accomplished' => $text('env_date_accomplished'),
+            'env_remarks' => $text('env_remarks'),
         ];
     }
 

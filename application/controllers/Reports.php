@@ -3,7 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Reports extends MY_Controller
 {
-    /** null = unrestricted (super_admin/admin); int = locked to this barangay; 0 = encoder has no barangay assigned */
+    /** null = unrestricted, or (for an encoder assigned at municipality/province/region level) scoped via restricted_municipality_id; int = locked to this barangay; 0 = encoder has no area assigned */
     protected $restricted_barangay_id;
 
     public function __construct()
@@ -20,13 +20,23 @@ class Reports extends MY_Controller
         $this->restricted_barangay_id = null;
         if ($this->current_user->role_name === 'encoder') {
             $barangay_assignment = null;
+            $has_wider_assignment = false;
             foreach ($this->authentication->assigned_areas() as $area) {
                 if ($area->scope_type === 'barangay') {
                     $barangay_assignment = $area;
                     break;
                 }
+                if (in_array($area->scope_type, ['municipality', 'province', 'region'], true)) {
+                    $has_wider_assignment = true;
+                }
             }
-            $this->restricted_barangay_id = $barangay_assignment->barangay_id ?? 0;
+            if ($barangay_assignment) {
+                $this->restricted_barangay_id = $barangay_assignment->barangay_id;
+            } elseif (!$has_wider_assignment) {
+                $this->restricted_barangay_id = 0;
+            }
+            // Else: assigned at municipality/province/region level -- stays null so
+            // callers fall back to restricted_municipality_id (any barangay in it).
         }
         $this->data['restricted_barangay_id'] = $this->restricted_barangay_id;
     }

@@ -105,6 +105,7 @@
                     <table class="table table-bordered table-sm align-middle text-center" id="household_report_table" style="font-size: 0.8rem;">
                         <thead class="table-light">
                             <tr>
+                                <th rowspan="2" class="align-middle no-print">Map</th>
                                 <?php if ($show_barangay_column): ?>
                                     <th rowspan="2" class="align-middle">Barangay</th>
                                 <?php endif; ?>
@@ -148,6 +149,7 @@
                                 ?>
                                 <?php if (empty($members)): ?>
                                     <tr data-hh-group="<?= $h_index ?>">
+                                        <td class="no-print">&mdash;</td>
                                         <?php if ($show_barangay_column): ?>
                                             <td><?= html_escape($entry->barangay_name ?? '') ?></td>
                                         <?php endif; ?>
@@ -159,6 +161,18 @@
                                     <?php foreach ($members as $i => $member): ?>
                                         <tr data-hh-group="<?= $h_index ?>">
                                             <?php if ($i === 0): ?>
+                                                <td rowspan="<?= $row_count ?>" class="no-print">
+                                                    <?php if ($entry->latitude !== null && $entry->longitude !== null): ?>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary household-map-btn"
+                                                            data-lat="<?= html_escape($entry->latitude) ?>"
+                                                            data-lon="<?= html_escape($entry->longitude) ?>"
+                                                            data-label="<?= html_escape($entry->household_no . ($head ? ' - ' . $head->last_name . ', ' . $head->first_name : '')) ?>">
+                                                            <i class="bi bi-geo-alt-fill"></i> Map
+                                                        </button>
+                                                    <?php else: ?>
+                                                        <span class="text-muted small">No location</span>
+                                                    <?php endif; ?>
+                                                </td>
                                                 <?php if ($show_barangay_column): ?>
                                                     <td rowspan="<?= $row_count ?>"><?= html_escape($entry->barangay_name ?? '') ?></td>
                                                 <?php endif; ?>
@@ -190,6 +204,20 @@
                     </table>
                 </div>
             <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="modal fade no-print" id="household_map_modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="household_map_modal_label">Household Location</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="household_map_modal_map" style="height: 400px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 <?php endif; ?>

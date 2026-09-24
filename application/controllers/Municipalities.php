@@ -83,6 +83,8 @@ class Municipalities extends MY_Controller
         $this->form_validation->set_rules('code', 'Code', 'trim|max_length[45]');
         $this->form_validation->set_rules('prefix', 'Prefix', 'trim|max_length[10]');
         $this->form_validation->set_rules('description', 'Description', 'trim');
+        $this->form_validation->set_rules('latitude', 'Latitude', 'trim|decimal');
+        $this->form_validation->set_rules('longitude', 'Longitude', 'trim|decimal');
 
         if ($this->form_validation->run() === true) {
             if ($this->municipality_model->name_exists($this->input->post('name'), $this->input->post('province_id'))) {
@@ -94,6 +96,8 @@ class Municipalities extends MY_Controller
                     'code' => $this->input->post('code'),
                     'prefix' => strtoupper(trim((string) $this->input->post('prefix'))) ?: null,
                     'description' => $this->input->post('description'),
+                    'latitude' => $this->input->post('latitude') ?: null,
+                    'longitude' => $this->input->post('longitude') ?: null,
                 ]);
                 $this->session->set_flashdata('success', 'Municipality created successfully.');
                 redirect('municipalities');
@@ -134,6 +138,8 @@ class Municipalities extends MY_Controller
         $this->form_validation->set_rules('code', 'Code', 'trim|max_length[45]');
         $this->form_validation->set_rules('prefix', 'Prefix', 'trim|max_length[10]');
         $this->form_validation->set_rules('description', 'Description', 'trim');
+        $this->form_validation->set_rules('latitude', 'Latitude', 'trim|decimal');
+        $this->form_validation->set_rules('longitude', 'Longitude', 'trim|decimal');
 
         if ($this->form_validation->run() === true) {
             if ($this->municipality_model->name_exists($this->input->post('name'), $this->input->post('province_id'), $id)) {
@@ -145,6 +151,8 @@ class Municipalities extends MY_Controller
                     'code' => $this->input->post('code'),
                     'prefix' => strtoupper(trim((string) $this->input->post('prefix'))) ?: null,
                     'description' => $this->input->post('description'),
+                    'latitude' => $this->input->post('latitude') ?: null,
+                    'longitude' => $this->input->post('longitude') ?: null,
                 ]);
                 $this->session->set_flashdata('success', 'Municipality updated successfully.');
                 redirect('municipalities');

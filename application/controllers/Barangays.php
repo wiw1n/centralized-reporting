@@ -98,6 +98,8 @@ class Barangays extends MY_Controller
         $this->form_validation->set_rules('day_care_centers_private', 'Day Care Centers (Private)', 'trim|numeric');
         $this->form_validation->set_rules('elementary_schools_public', 'Elementary Schools (Public)', 'trim|numeric');
         $this->form_validation->set_rules('elementary_schools_private', 'Elementary Schools (Private)', 'trim|numeric');
+        $this->form_validation->set_rules('latitude', 'Latitude', 'trim|decimal');
+        $this->form_validation->set_rules('longitude', 'Longitude', 'trim|decimal');
         if ($restricted_id === null) {
             $this->form_validation->set_rules('region_id', 'Region', 'required|trim|numeric');
             $this->form_validation->set_rules('province_id', 'Province', 'required|trim|numeric');
@@ -121,6 +123,8 @@ class Barangays extends MY_Controller
                     'day_care_centers_private' => (int) $this->input->post('day_care_centers_private'),
                     'elementary_schools_public' => (int) $this->input->post('elementary_schools_public'),
                     'elementary_schools_private' => (int) $this->input->post('elementary_schools_private'),
+                    'latitude' => $this->input->post('latitude') ?: null,
+                    'longitude' => $this->input->post('longitude') ?: null,
                 ]);
                 $this->session->set_flashdata('success', 'Barangay created successfully.');
                 redirect('barangays');
@@ -183,6 +187,8 @@ class Barangays extends MY_Controller
         $this->form_validation->set_rules('day_care_centers_private', 'Day Care Centers (Private)', 'trim|numeric');
         $this->form_validation->set_rules('elementary_schools_public', 'Elementary Schools (Public)', 'trim|numeric');
         $this->form_validation->set_rules('elementary_schools_private', 'Elementary Schools (Private)', 'trim|numeric');
+        $this->form_validation->set_rules('latitude', 'Latitude', 'trim|decimal');
+        $this->form_validation->set_rules('longitude', 'Longitude', 'trim|decimal');
         if ($restricted_id === null) {
             $this->form_validation->set_rules('region_id', 'Region', 'required|trim|numeric');
             $this->form_validation->set_rules('province_id', 'Province', 'required|trim|numeric');
@@ -206,6 +212,8 @@ class Barangays extends MY_Controller
                     'day_care_centers_private' => (int) $this->input->post('day_care_centers_private'),
                     'elementary_schools_public' => (int) $this->input->post('elementary_schools_public'),
                     'elementary_schools_private' => (int) $this->input->post('elementary_schools_private'),
+                    'latitude' => $this->input->post('latitude') ?: null,
+                    'longitude' => $this->input->post('longitude') ?: null,
                 ]);
                 $this->session->set_flashdata('success', 'Barangay updated successfully.');
                 redirect('barangays');
