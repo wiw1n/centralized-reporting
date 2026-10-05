@@ -36,7 +36,7 @@ class Resident_data_survey_model extends CI_Model
                 residents.sex, residents.birthdate,
                 resident_data_survey.immunization_status, resident_data_survey.covid_vaccine_status,
                 resident_data_survey.schisto_mda_status, resident_data_survey.schisto_mda_date,
-                resident_data_survey.eats_breakfast, resident_data_survey.eats_lunch, resident_data_survey.eats_snacks,
+                resident_data_survey.eats_breakfast, resident_data_survey.eats_lunch, resident_data_survey.eats_dinner, resident_data_survey.eats_snacks,
                 resident_data_survey.exercises, resident_data_survey.exercise_frequency,
                 resident_data_survey.has_recreational_activity
             ")

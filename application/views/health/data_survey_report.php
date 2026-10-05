@@ -114,7 +114,7 @@
                                 <th colspan="3">Immun. Status</th>
                                 <th colspan="6">COVID-19 Immun. (No. of Doses)</th>
                                 <th colspan="3">Schisto MDA Status</th>
-                                <th colspan="3">Usual Daily Food Intake</th>
+                                <th colspan="4">Usual Daily Food Intake</th>
                                 <th colspan="3">Exercise</th>
                                 <th colspan="2">Recreational</th>
                             </tr>
@@ -133,6 +133,7 @@
                                 <th>Date of Tx</th>
                                 <th>B</th>
                                 <th>L</th>
+                                <th>D</th>
                                 <th>S</th>
                                 <th>Y</th>
                                 <th>N</th>
@@ -164,6 +165,7 @@
                                     <td><?= !empty($row->schisto_mda_date) ? date('m/d/Y', strtotime($row->schisto_mda_date)) : '' ?></td>
                                     <td><?= !empty($row->eats_breakfast) ? '&check;' : '' ?></td>
                                     <td><?= !empty($row->eats_lunch) ? '&check;' : '' ?></td>
+                                    <td><?= !empty($row->eats_dinner) ? '&check;' : '' ?></td>
                                     <td><?= !empty($row->eats_snacks) ? '&check;' : '' ?></td>
                                     <td><?= $row->exercises !== null && (int) $row->exercises === 1 ? '&check;' : '' ?></td>
                                     <td><?= $row->exercises !== null && (int) $row->exercises === 0 ? '&check;' : '' ?></td>

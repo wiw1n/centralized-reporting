@@ -748,6 +748,37 @@ $ds = $resident_data_survey ?? null;
                             </div>
                         </div>
                         <div class="row align-items-end">
+                            <div class="col-12 mb-2">
+                                <label class="form-label small mb-1">Drinking Water Source</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_drink_rainwater" value="1" class="form-check-input" id="env_drink_rainwater" <?= set_value('env_drink_rainwater', $hh->env_drink_rainwater ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_drink_rainwater">Rainwater</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_drink_well" value="1" class="form-check-input" id="env_drink_well" <?= set_value('env_drink_well', $hh->env_drink_well ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_drink_well">Well</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_drink_water_truck" value="1" class="form-check-input" id="env_drink_water_truck" <?= set_value('env_drink_water_truck', $hh->env_drink_water_truck ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_drink_water_truck">Private water trucks</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_drink_faucet" value="1" class="form-check-input" id="env_drink_faucet" <?= set_value('env_drink_faucet', $hh->env_drink_faucet ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_drink_faucet">Faucet (NAWASA)</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_drink_refilling_station" value="1" class="form-check-input" id="env_drink_refilling_station" <?= set_value('env_drink_refilling_station', $hh->env_drink_refilling_station ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_drink_refilling_station">Water Refilling Station</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="env_drink_bottled" value="1" class="form-check-input" id="env_drink_bottled" <?= set_value('env_drink_bottled', $hh->env_drink_bottled ?? 0) ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="env_drink_bottled">Bottled water</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row align-items-end">
                             <div class="col-md-3 mb-2">
                                 <label class="form-label small mb-1">House</label>
                                 <select name="env_house_ownership" class="form-select form-select-sm">
@@ -799,7 +830,7 @@ $ds = $resident_data_survey ?? null;
                                 <input type="text" name="env_vehicle_other" class="form-control form-control-sm" maxlength="100" value="<?= set_value('env_vehicle_other', $hh->env_vehicle_other ?? '') ?>">
                             </div>
                         </div>
-                        <div class="row align-items-end">
+                        <div class="row align-items-end border-top pt-2 mt-2">
                             <div class="col-md-6 mb-2">
                                 <label class="form-label small mb-1">Food Production Activity</label>
                                 <div class="d-flex flex-wrap gap-3">
@@ -874,7 +905,7 @@ $ds = $resident_data_survey ?? null;
             <div id="section-data-survey" class="card shadow-sm form-section mb-4">
                 <div class="card-header"><h5 class="mb-0"><i class="bi bi-clipboard2-pulse"></i> Data Survey Tool <small class="text-muted">(optional)</small></h5></div>
                 <div class="card-body">
-                    <div class="border-top pt-2 mt-2">
+                    <!-- <div class="border-top pt-2 mt-2">
                         <div class="small text-muted text-uppercase fw-semibold mb-1">Immun. Status</div>
                         <div class="row">
                             <div class="col-md-3 mb-2">
@@ -895,7 +926,7 @@ $ds = $resident_data_survey ?? null;
                                 </select>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="border-top pt-2 mt-2">
                         <div class="small text-muted text-uppercase fw-semibold mb-1">Schisto MDA Status</div>
@@ -917,17 +948,33 @@ $ds = $resident_data_survey ?? null;
                     <div class="border-top pt-2 mt-2">
                         <div class="small text-muted text-uppercase fw-semibold mb-1">Usual Daily Food Intake</div>
                         <div class="row">
-                            <div class="col-auto form-check">
-                                <input type="checkbox" name="eats_breakfast" value="1" class="form-check-input" id="eats_breakfast" <?= set_value('eats_breakfast', $ds->eats_breakfast ?? 0) ? 'checked' : '' ?>>
-                                <label class="form-check-label" for="eats_breakfast">Breakfast</label>
+                            <div class="col-md-6 col-lg-3 mb-2">
+                                <div class="form-check">
+                                    <input type="checkbox" name="eats_breakfast" value="1" class="form-check-input" id="eats_breakfast" <?= set_value('eats_breakfast', $ds->eats_breakfast ?? 0) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="eats_breakfast">Breakfast</label>
+                                </div>
+                                <input type="text" name="eats_breakfast_food" class="form-control form-control-sm mt-1" maxlength="255" placeholder="Food eaten (e.g. rice, fish)" value="<?= set_value('eats_breakfast_food', $ds->eats_breakfast_food ?? '') ?>">
                             </div>
-                            <div class="col-auto form-check">
-                                <input type="checkbox" name="eats_lunch" value="1" class="form-check-input" id="eats_lunch" <?= set_value('eats_lunch', $ds->eats_lunch ?? 0) ? 'checked' : '' ?>>
-                                <label class="form-check-label" for="eats_lunch">Lunch</label>
+                            <div class="col-md-6 col-lg-3 mb-2">
+                                <div class="form-check">
+                                    <input type="checkbox" name="eats_lunch" value="1" class="form-check-input" id="eats_lunch" <?= set_value('eats_lunch', $ds->eats_lunch ?? 0) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="eats_lunch">Lunch</label>
+                                </div>
+                                <input type="text" name="eats_lunch_food" class="form-control form-control-sm mt-1" maxlength="255" placeholder="Food eaten (e.g. rice, fish)" value="<?= set_value('eats_lunch_food', $ds->eats_lunch_food ?? '') ?>">
                             </div>
-                            <div class="col-auto form-check">
-                                <input type="checkbox" name="eats_snacks" value="1" class="form-check-input" id="eats_snacks" <?= set_value('eats_snacks', $ds->eats_snacks ?? 0) ? 'checked' : '' ?>>
-                                <label class="form-check-label" for="eats_snacks">Snacks</label>
+                            <div class="col-md-6 col-lg-3 mb-2">
+                                <div class="form-check">
+                                    <input type="checkbox" name="eats_dinner" value="1" class="form-check-input" id="eats_dinner" <?= set_value('eats_dinner', $ds->eats_dinner ?? 0) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="eats_dinner">Dinner</label>
+                                </div>
+                                <input type="text" name="eats_dinner_food" class="form-control form-control-sm mt-1" maxlength="255" placeholder="Food eaten (e.g. rice, fish)" value="<?= set_value('eats_dinner_food', $ds->eats_dinner_food ?? '') ?>">
+                            </div>
+                            <div class="col-md-6 col-lg-3 mb-2">
+                                <div class="form-check">
+                                    <input type="checkbox" name="eats_snacks" value="1" class="form-check-input" id="eats_snacks" <?= set_value('eats_snacks', $ds->eats_snacks ?? 0) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="eats_snacks">Snacks</label>
+                                </div>
+                                <input type="text" name="eats_snacks_food" class="form-control form-control-sm mt-1" maxlength="255" placeholder="Food eaten (e.g. rice, fish)" value="<?= set_value('eats_snacks_food', $ds->eats_snacks_food ?? '') ?>">
                             </div>
                         </div>
                     </div>
